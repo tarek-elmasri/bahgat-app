@@ -6,7 +6,7 @@
    "password": "root",
    "database": "chocolate",
    "synchronize": true,
-   "logging": false,
+   "logging": true,
    "entities": [
       "dist/entity/**/*.js"
    ],

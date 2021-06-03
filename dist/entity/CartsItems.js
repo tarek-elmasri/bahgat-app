@@ -17,17 +17,14 @@ const Item_1 = require("./Item");
 let CartsItems = class CartsItems extends typeorm_1.BaseEntity {
 };
 __decorate([
-    type_graphql_1.Field(),
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
 ], CartsItems.prototype, "uuid", void 0);
 __decorate([
-    type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], CartsItems.prototype, "cartUuid", void 0);
 __decorate([
-    type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], CartsItems.prototype, "itemUuid", void 0);
@@ -38,14 +35,15 @@ __decorate([
 ], CartsItems.prototype, "quantity", void 0);
 __decorate([
     type_graphql_1.Field(() => Item_1.Item),
-    typeorm_1.ManyToOne(() => Item_1.Item, (item) => item.cartItems, { nullable: true }),
-    __metadata("design:type", Item_1.Item)
+    typeorm_1.ManyToOne(() => Item_1.Item, (item) => item.cartConnection, { primary: true }),
+    typeorm_1.JoinTable({ name: "itemUuid" }),
+    __metadata("design:type", Promise)
 ], CartsItems.prototype, "item", void 0);
 __decorate([
-    type_graphql_1.Field(() => Cart_1.Cart),
-    typeorm_1.ManyToOne(() => Cart_1.Cart, (cart) => cart.cartItems, { nullable: true }),
-    __metadata("design:type", Cart_1.Cart)
-], CartsItems.prototype, "card", void 0);
+    typeorm_1.ManyToOne(() => Cart_1.Cart, (cart) => cart.cartItems, { primary: true }),
+    typeorm_1.JoinTable({ name: "cartUuid" }),
+    __metadata("design:type", Promise)
+], CartsItems.prototype, "cart", void 0);
 CartsItems = __decorate([
     typeorm_1.Entity("cartsitems"),
     type_graphql_1.ObjectType()

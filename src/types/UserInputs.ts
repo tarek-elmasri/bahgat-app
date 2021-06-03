@@ -1,5 +1,4 @@
 import { Field, InputType } from "type-graphql";
-import { Role } from "./Role";
 
 @InputType()
 export class CreateUserInput {
@@ -11,9 +10,6 @@ export class CreateUserInput {
 
   @Field()
   password: string;
-
-  @Field(() => String, { nullable: true, defaultValue: Role.USER })
-  role: string;
 }
 
 @InputType()

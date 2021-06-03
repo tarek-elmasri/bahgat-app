@@ -21,7 +21,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CartResolver = exports.createNewCart = void 0;
+exports.CartResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const Cart_1 = require("../entity/Cart");
 const Err_1 = require("../errors/Err");
@@ -29,30 +29,15 @@ const CartResponse_1 = require("../types/CartResponse");
 const CartsItems_1 = require("../entity/CartsItems");
 const Item_1 = require("../entity/Item");
 const codes_1 = require("../errors/codes");
-const createNewCart = (sessionId, userUuid) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const newCart = Cart_1.Cart.create({ sessionId, userUuid });
-        return yield newCart.save();
-    }
-    catch (err) {
-        console.log(err);
-        return undefined;
-    }
-});
-exports.createNewCart = createNewCart;
+const ItemResponse_1 = require("../types/ItemResponse");
 let CartResolver = class CartResolver {
     myCart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            let cart;
             try {
-                if (!req.session.cartUuid && !req.session.userUuid) {
-                    cart = yield exports.createNewCart(req.sessionID);
-                    req.session.cartUuid = cart === null || cart === void 0 ? void 0 : cart.uuid;
-                    return {
-                        payload: cart,
-                    };
-                }
-                cart = yield Cart_1.Cart.findOne({ where: { sessionId: req.sessionID } });
+                const cart = yield Cart_1.Cart.findOne({
+                    where: { sessionId: req.sessionID },
+                    relations: ["cartItems"],
+                });
                 return {
                     payload: cart,
                 };
@@ -74,11 +59,7 @@ let CartResolver = class CartResolver {
                     quantity,
                 });
                 yield newCartItem.save();
-                const cart = yield Cart_1.Cart.findOne({
-                    where: { uuid: req.session.cartUuid },
-                    relations: ["cartItems"],
-                });
-                return { payload: cart };
+                return { payload: item };
             }
             catch (err) {
                 return Err_1.Err.ResponseBuilder(err);
@@ -94,7 +75,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CartResolver.prototype, "myCart", null);
 __decorate([
-    type_graphql_1.Mutation(() => CartResponse_1.CartResponse),
+    type_graphql_1.Mutation(() => ItemResponse_1.ItemResponse),
     __param(0, type_graphql_1.Arg("itemUuid")),
     __param(1, type_graphql_1.Arg("quantity")),
     __param(2, type_graphql_1.Ctx()),

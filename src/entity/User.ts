@@ -1,5 +1,5 @@
 import { Role } from "../types/Role";
-import { Field, ObjectType } from "type-graphql";
+import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
@@ -9,6 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Cart } from "./Cart";
+import { MyContext } from "src/types/MyContext";
 
 @ObjectType()
 @Entity("users")
@@ -43,4 +45,14 @@ export class User extends BaseEntity {
   @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Field(() => Cart)
+  async cart(@Ctx() { req }: MyContext) {
+    return await Cart.findOne({
+      where: {
+        uuid: req.session.cartUuid,
+      },
+      relations: ["cartItems"],
+    });
+  }
 }

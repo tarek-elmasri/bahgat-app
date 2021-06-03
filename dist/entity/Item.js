@@ -8,13 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Item = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const Cart_1 = require("./Cart");
 const CartsItems_1 = require("./CartsItems");
 const Category_1 = require("./Category");
 let Item = class Item extends typeorm_1.BaseEntity {
+    carts({ cartsLoader }) {
+        return cartsLoader.load(this.uuid);
+    }
 };
 __decorate([
     type_graphql_1.Field(() => String),
@@ -119,10 +126,16 @@ __decorate([
     __metadata("design:type", Category_1.Category)
 ], Item.prototype, "category", void 0);
 __decorate([
-    type_graphql_1.Field(() => [CartsItems_1.CartsItems], { nullable: true }),
     typeorm_1.OneToMany(() => CartsItems_1.CartsItems, (cartItem) => cartItem.item),
-    __metadata("design:type", Array)
-], Item.prototype, "cartItems", void 0);
+    __metadata("design:type", Promise)
+], Item.prototype, "cartConnection", void 0);
+__decorate([
+    type_graphql_1.Field(() => [Cart_1.Cart], { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], Item.prototype, "carts", null);
 Item = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity("items")

@@ -1,4 +1,5 @@
-import { Field, Float, Int, ObjectType } from "type-graphql";
+import { MyContext } from "src/types/MyContext";
+import { Ctx, Field, Float, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
@@ -9,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Cart } from "./Cart";
 import { CartsItems } from "./CartsItems";
 import { Category } from "./Category";
 
@@ -97,7 +99,12 @@ export class Item extends BaseEntity {
   })
   category: Category;
 
-  @Field(() => [CartsItems], { nullable: true })
   @OneToMany(() => CartsItems, (cartItem) => cartItem.item)
-  cartItems: CartsItems[];
+  cartConnection: Promise<CartsItems[]>;
+
+  //useless -> to be deleted
+  @Field(() => [Cart], { nullable: true })
+  carts(@Ctx() { cartsLoader }: MyContext) {
+    return cartsLoader.load(this.uuid);
+  }
 }

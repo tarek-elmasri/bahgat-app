@@ -16,24 +16,21 @@ const CartsItems_1 = require("./CartsItems");
 let Cart = class Cart extends typeorm_1.BaseEntity {
 };
 __decorate([
-    type_graphql_1.Field(),
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
 ], Cart.prototype, "uuid", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
     typeorm_1.Column({ nullable: true }),
     __metadata("design:type", String)
 ], Cart.prototype, "userUuid", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
     typeorm_1.Column({ nullable: true }),
     __metadata("design:type", String)
 ], Cart.prototype, "sessionId", void 0);
 __decorate([
-    type_graphql_1.Field(() => [CartsItems_1.CartsItems], { nullable: true }),
-    typeorm_1.OneToMany(() => CartsItems_1.CartsItems, (cartItem) => cartItem.card),
-    __metadata("design:type", Array)
+    type_graphql_1.Field(() => [CartsItems_1.CartsItems]),
+    typeorm_1.OneToMany(() => CartsItems_1.CartsItems, (cartItem) => cartItem.cart),
+    __metadata("design:type", Promise)
 ], Cart.prototype, "cartItems", void 0);
 Cart = __decorate([
     typeorm_1.Entity("carts"),

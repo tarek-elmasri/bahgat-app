@@ -6,35 +6,17 @@ import { CartResponse } from "../types/CartResponse";
 import { CartsItems } from "../entity/CartsItems";
 import { Item } from "../entity/Item";
 import { ErrCode } from "../errors/codes";
+import { ItemResponse } from "../types/ItemResponse";
 
-export const createNewCart = async (
-  sessionId: string,
-  userUuid?: string
-): Promise<Cart | undefined> => {
-  try {
-    const newCart = Cart.create({ sessionId, userUuid });
-    return await newCart.save();
-  } catch (err) {
-    console.log(err);
-    return undefined;
-  }
-};
 @Resolver()
 export class CartResolver {
   @Query(() => CartResponse)
   async myCart(@Ctx() { req }: MyContext): Promise<CartResponse> {
-    let cart;
-
     try {
-      if (!req.session.cartUuid && !req.session.userUuid) {
-        cart = await createNewCart(req.sessionID);
-        req.session.cartUuid = cart?.uuid;
-        return {
-          payload: cart,
-        };
-      }
-
-      cart = await Cart.findOne({ where: { sessionId: req.sessionID } });
+      const cart = await Cart.findOne({
+        where: { sessionId: req.sessionID },
+        relations: ["cartItems"],
+      });
 
       return {
         payload: cart,
@@ -44,12 +26,12 @@ export class CartResolver {
     }
   }
 
-  @Mutation(() => CartResponse)
+  @Mutation(() => ItemResponse)
   async addItemToCart(
     @Arg("itemUuid") itemUuid: string,
     @Arg("quantity") quantity: number,
     @Ctx() { req }: MyContext
-  ): Promise<CartResponse> {
+  ): Promise<ItemResponse> {
     try {
       const item = await Item.findOne({ where: { uuid: itemUuid } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item found for this ID.");
@@ -62,11 +44,7 @@ export class CartResolver {
 
       await newCartItem.save();
 
-      const cart = await Cart.findOne({
-        where: { uuid: req.session.cartUuid },
-        relations: ["cartItems"],
-      });
-      return { payload: cart };
+      return { payload: item };
     } catch (err) {
       return Err.ResponseBuilder(err);
     }

@@ -7,5 +7,6 @@ var ErrCode;
     ErrCode["UUID_INVALID_SYNTAX"] = "2P045";
     ErrCode["INVALID_LOGIN"] = "INVALID_LOGIN";
     ErrCode["NOT_LOGGED_IN"] = "NOT_LOGGED_IN";
+    ErrCode["NOT_AUTHORIZED"] = " NOT_AUTHORIZED";
 })(ErrCode = exports.ErrCode || (exports.ErrCode = {}));
 //# sourceMappingURL=codes.js.map

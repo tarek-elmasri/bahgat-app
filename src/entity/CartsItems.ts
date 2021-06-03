@@ -3,6 +3,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
@@ -12,15 +13,15 @@ import { Item } from "./Item";
 @Entity("cartsitems")
 @ObjectType()
 export class CartsItems extends BaseEntity {
-  @Field()
   @PrimaryGeneratedColumn("uuid")
   uuid: string;
 
-  @Field()
+  //TODO delete unneccessry fields
+  //@Field()
   @Column()
   cartUuid: string;
 
-  @Field()
+  //@Field()
   @Column()
   itemUuid: string;
 
@@ -29,10 +30,11 @@ export class CartsItems extends BaseEntity {
   quantity: number;
 
   @Field(() => Item)
-  @ManyToOne(() => Item, (item) => item.cartItems, { nullable: true })
-  item: Item;
+  @ManyToOne(() => Item, (item) => item.cartConnection, { primary: true })
+  @JoinTable({ name: "itemUuid" })
+  item: Promise<Item>;
 
-  @Field(() => Cart)
-  @ManyToOne(() => Cart, (cart) => cart.cartItems, { nullable: true })
-  card: Cart;
+  @ManyToOne(() => Cart, (cart) => cart.cartItems, { primary: true })
+  @JoinTable({ name: "cartUuid" })
+  cart: Promise<Cart>;
 }

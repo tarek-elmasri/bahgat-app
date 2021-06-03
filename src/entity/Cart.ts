@@ -1,3 +1,4 @@
+//import { MyContext } from "../types/MyContext";
 import { Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -7,23 +8,33 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { CartsItems } from "./CartsItems";
+//import { Item } from "./Item";
 
 @Entity("carts")
 @ObjectType()
 export class Cart extends BaseEntity {
-  @Field()
+  //@Field()
   @PrimaryGeneratedColumn("uuid")
   uuid: string;
 
-  @Field(() => String, { nullable: true })
+  // expted not need
+  //TODO test
+  //@Field(() => String, { nullable: true })
   @Column({ nullable: true })
   userUuid?: string;
 
-  @Field(() => String, { nullable: true })
   @Column({ nullable: true })
   sessionId: string;
 
-  @Field(() => [CartsItems], { nullable: true })
-  @OneToMany(() => CartsItems, (cartItem) => cartItem.card)
-  cartItems?: CartsItems[];
+  @Field(() => [CartsItems])
+  @OneToMany(() => CartsItems, (cartItem) => cartItem.cart)
+  cartItems: Promise<CartsItems[]>;
+
+  //TODO after implementation
+  //useless here as quantities are not available --> to be moved into cart items entity
+  //supposed to return CartItems
+  //@Field(() => [Item], { nullable: true })
+  // items(@Ctx() { itemsLoader }: MyContext) {
+  //   return itemsLoader.load(this.uuid);
+  // }
 }

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateUserInput = exports.CreateUserInput = void 0;
 const type_graphql_1 = require("type-graphql");
-const Role_1 = require("./Role");
 let CreateUserInput = class CreateUserInput {
 };
 __decorate([
@@ -26,10 +25,6 @@ __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
 ], CreateUserInput.prototype, "password", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true, defaultValue: Role_1.Role.USER }),
-    __metadata("design:type", String)
-], CreateUserInput.prototype, "role", void 0);
 CreateUserInput = __decorate([
     type_graphql_1.InputType()
 ], CreateUserInput);
