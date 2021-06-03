@@ -22,7 +22,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
-const types_1 = require("../types");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const Cart_1 = require("./Cart");
@@ -60,7 +59,7 @@ __decorate([
 ], User.prototype, "password", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
-    typeorm_1.Column({ default: types_1.Role.USER }),
+    typeorm_1.Column({ default: "USER" }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([

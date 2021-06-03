@@ -1,4 +1,4 @@
-import { Role, MyContext } from "../types";
+import { MyContext } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -31,7 +31,7 @@ export class User extends BaseEntity {
   password: string;
 
   @Field(() => String)
-  @Column({ default: Role.USER })
+  @Column({ default: "USER" })
   role: string;
 
   @Column("text", { nullable: true })

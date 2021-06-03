@@ -15,7 +15,15 @@ const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const isAuthorized = ({ req }, next, key) => __awaiter(void 0, void 0, void 0, function* () {
     const { role } = req.session;
-    if (role !== key) {
+    let pass = false;
+    console.log("key: ", key, " role :", role);
+    if (key === types_1.Role.STAFF) {
+        pass = role === types_1.Role.STAFF || role === types_1.Role.ADMIN;
+    }
+    else {
+        pass = role === key;
+    }
+    if (!pass) {
         throw new Err_1.Err(codes_1.ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
     }
     return next();

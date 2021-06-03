@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { Role } from "../types";
 
 type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
-const sessionBuilder: mwFn = async (req, _res, next) => {
+export const sessionBuilder: mwFn = async (req, _res, next) => {
   const { cartUuid, role, id, userUuid } = req.session;
 
   if (!cartUuid && !userUuid) {
@@ -20,5 +20,3 @@ const sessionBuilder: mwFn = async (req, _res, next) => {
 
   next();
 };
-
-export default sessionBuilder;

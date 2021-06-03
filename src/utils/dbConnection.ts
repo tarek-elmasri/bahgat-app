@@ -1,6 +1,6 @@
 import { ConnectionOptions } from "typeorm";
 
-const connectionOptions: ConnectionOptions = {
+export const dbConnection: ConnectionOptions = {
   type: "postgres",
   host: "localhost",
   port: 5432,
@@ -18,5 +18,3 @@ const connectionOptions: ConnectionOptions = {
     subscribersDir: "dist/subscriber",
   },
 };
-
-export default connectionOptions;

@@ -24,6 +24,7 @@ Err.ResponseBuilder = (err) => {
             {
                 code: code,
                 message: message || "Bad Request",
+                field,
             },
         ],
     };

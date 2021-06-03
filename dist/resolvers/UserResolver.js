@@ -24,7 +24,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const types_1 = require("../types");
-const types_2 = require("../types");
 const entity_1 = require("../entity");
 const bcryptjs_1 = require("bcryptjs");
 const Err_1 = require("../errors/Err");
@@ -89,6 +88,7 @@ let UserResolver = class UserResolver {
                 if (!verified)
                     throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
                 req.session.userUuid = user.uuid;
+                req.session.role = user.role;
                 return {
                     payload: user,
                 };
@@ -108,11 +108,11 @@ let UserResolver = class UserResolver {
                     email: email.toLowerCase(),
                     password: hashedPassword,
                     sessionId: req.sessionID,
-                    role: types_2.Role.USER,
+                    role: types_1.Role.USER,
                 });
                 yield user.save();
                 req.session.userUuid = user.uuid;
-                req.session.role = types_2.Role.USER;
+                req.session.role = types_1.Role.USER;
                 return {
                     payload: user,
                 };
@@ -166,7 +166,7 @@ __decorate([
 ], UserResolver.prototype, "me", null);
 __decorate([
     type_graphql_1.Query(() => types_1.UserResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isAdmin),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -180,7 +180,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "users", null);
 __decorate([
-    type_graphql_1.Query(() => types_1.UserResponse),
+    type_graphql_1.Mutation(() => types_1.UserResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isGuest),
     __param(0, type_graphql_1.Arg("email")),
     __param(1, type_graphql_1.Arg("password")),
     __param(2, type_graphql_1.Ctx()),
@@ -190,21 +191,23 @@ __decorate([
 ], UserResolver.prototype, "login", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isGuest),
     __param(0, type_graphql_1.Arg("properties")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [types_2.CreateUserInput, Object]),
+    __metadata("design:paramtypes", [types_1.CreateUserInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
-    __param(0, type_graphql_1.Arg("properties", () => types_2.UpdateUserInput)),
+    __param(0, type_graphql_1.Arg("properties", () => types_1.UpdateUserInput)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [types_2.UpdateUserInput]),
+    __metadata("design:paramtypes", [types_1.UpdateUserInput]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "updateUser", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_2.SuccessResponse),
+    type_graphql_1.Mutation(() => types_1.SuccessResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isAdmin),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

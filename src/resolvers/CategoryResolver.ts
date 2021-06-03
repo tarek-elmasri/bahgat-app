@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import {
   CategoryResponse,
   NewCategoryInput,
@@ -10,6 +10,7 @@ import { getConnection } from "typeorm";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { Category } from "../entity";
+import { isStaff } from "../middlewares/authorization";
 
 @Resolver()
 export class CategoryResolver {
@@ -35,6 +36,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CategoryResponse)
+  @UseMiddleware(isStaff)
   async createCategory(
     @Arg("properties") params: NewCategoryInput
   ): Promise<CategoryResponse> {
@@ -50,6 +52,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CategoryResponse)
+  @UseMiddleware(isStaff)
   async updateCategory(
     @Arg("properties") params: UpdateCategoryInput
   ): Promise<CategoryResponse> {
@@ -74,6 +77,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => SuccessResponse)
+  @UseMiddleware(isStaff)
   async deleteCategory(
     @Arg("properties") params: DeleteCategoryInput
   ): Promise<SuccessResponse> {

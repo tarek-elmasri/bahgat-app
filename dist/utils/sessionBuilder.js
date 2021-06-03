@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sessionBuilder = void 0;
 const Cart_1 = require("../entity/Cart");
 const types_1 = require("../types");
 const sessionBuilder = (req, _res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -24,5 +25,5 @@ const sessionBuilder = (req, _res, next) => __awaiter(void 0, void 0, void 0, fu
     }
     next();
 });
-exports.default = sessionBuilder;
+exports.sessionBuilder = sessionBuilder;
 //# sourceMappingURL=sessionBuilder.js.map

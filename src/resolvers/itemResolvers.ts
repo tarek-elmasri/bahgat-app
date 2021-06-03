@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { Item, Category } from "../entity";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
@@ -9,6 +9,7 @@ import {
   updateItemInput,
   SuccessResponse,
 } from "../types";
+import { isStaff } from "../middlewares/authorization";
 
 @Resolver()
 export class ItemResolver {
@@ -36,6 +37,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => ItemResponse)
+  @UseMiddleware(isStaff)
   async createItem(
     @Arg("properties") params: newItemInput
   ): Promise<ItemResponse> {
@@ -62,6 +64,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => ItemResponse)
+  @UseMiddleware(isStaff)
   async updateItem(
     @Arg("params") params: updateItemInput
   ): Promise<ItemResponse> {
@@ -86,6 +89,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => SuccessResponse)
+  @UseMiddleware(isStaff)
   async deleteItem(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
     try {
       const deleted = await Item.delete({ uuid });

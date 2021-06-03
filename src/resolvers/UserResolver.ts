@@ -8,20 +8,20 @@ import {
   Resolver,
   UseMiddleware,
 } from "type-graphql";
-import { UserResponse } from "../types";
 import {
   CreateUserInput,
   UpdateUserInput,
   SuccessResponse,
   MyContext,
   Role,
+  UserResponse,
 } from "../types";
 import { User, Cart } from "../entity";
 import { hash, compare } from "bcryptjs";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
-import { isAdmin } from "../middlewares/authorization";
+import { isAdmin, isGuest, isStaff } from "../middlewares/authorization";
 
 @ObjectType()
 class MeResponse {
@@ -51,7 +51,7 @@ export class UserResolver {
   }
 
   @Query(() => UserResponse)
-  @UseMiddleware(isAdmin)
+  @UseMiddleware(isStaff)
   async user(@Arg("uuid") uuid: string): Promise<UserResponse> {
     try {
       const user = await User.findOne({ where: { uuid } });
@@ -70,7 +70,8 @@ export class UserResolver {
     return await User.find();
   }
 
-  @Query(() => UserResponse)
+  @Mutation(() => UserResponse)
+  @UseMiddleware(isGuest)
   async login(
     @Arg("email") email: string,
     @Arg("password") password: string,
@@ -90,6 +91,7 @@ export class UserResolver {
         throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
 
       req.session.userUuid = user.uuid;
+      req.session.role = user.role as Role;
       //TODO sync user cart with session cart
 
       return {
@@ -101,6 +103,7 @@ export class UserResolver {
   }
 
   @Mutation(() => UserResponse)
+  @UseMiddleware(isGuest)
   async register(
     @Arg("properties") { username, password, email }: CreateUserInput,
     @Ctx() { req }: MyContext
@@ -127,6 +130,7 @@ export class UserResolver {
     }
   }
 
+  //TODO add authorization same user or admin
   @Mutation(() => UserResponse)
   async updateUser(
     @Arg("properties", () => UpdateUserInput) params: UpdateUserInput
@@ -149,6 +153,7 @@ export class UserResolver {
   }
 
   @Mutation(() => SuccessResponse)
+  @UseMiddleware(isAdmin)
   async deleteUser(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
     try {
       const result = await User.delete({ uuid });

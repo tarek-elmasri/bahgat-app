@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const connectionOptions = {
+exports.dbConnection = void 0;
+exports.dbConnection = {
     type: "postgres",
     host: "localhost",
     port: 5432,
@@ -18,5 +19,4 @@ const connectionOptions = {
         subscribersDir: "dist/subscriber",
     },
 };
-exports.default = connectionOptions;
 //# sourceMappingURL=dbConnection.js.map

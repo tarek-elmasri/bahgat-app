@@ -28,6 +28,7 @@ const typeorm_1 = require("typeorm");
 const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const entity_1 = require("../entity");
+const authorization_1 = require("../middlewares/authorization");
 let CategoryResolver = class CategoryResolver {
     categories() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -116,6 +117,7 @@ __decorate([
 ], CategoryResolver.prototype, "category", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.NewCategoryInput]),
@@ -123,6 +125,7 @@ __decorate([
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
@@ -130,6 +133,7 @@ __decorate([
 ], CategoryResolver.prototype, "updateCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),

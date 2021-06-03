@@ -12,7 +12,16 @@ type AuthorizationFn = (
 const isAuthorized: AuthorizationFn = async ({ req }, next, key) => {
   const { role } = req.session;
 
-  if (role !== key) {
+  let pass = false;
+
+  console.log("key: ", key, " role :", role);
+  if (key === Role.STAFF) {
+    pass = role === Role.STAFF || role === Role.ADMIN;
+  } else {
+    pass = role === key;
+  }
+
+  if (!pass) {
     throw new Err(ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
   }
 

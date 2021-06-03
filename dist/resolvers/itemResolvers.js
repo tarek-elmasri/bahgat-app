@@ -28,6 +28,7 @@ const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const typeorm_1 = require("typeorm");
 const types_1 = require("../types");
+const authorization_1 = require("../middlewares/authorization");
 let ItemResolver = class ItemResolver {
     items() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -124,6 +125,7 @@ __decorate([
 ], ItemResolver.prototype, "item", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.newItemInput]),
@@ -131,6 +133,7 @@ __decorate([
 ], ItemResolver.prototype, "createItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("params")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.updateItemInput]),
@@ -138,6 +141,7 @@ __decorate([
 ], ItemResolver.prototype, "updateItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
+    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

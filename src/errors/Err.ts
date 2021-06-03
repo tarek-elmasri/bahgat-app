@@ -18,7 +18,7 @@ export class Err {
     console.log(err.code, err.message);
 
     let { code, message } = err;
-    let field: string;
+    let field: string | undefined;
 
     if (code === "23505") {
       message = "Email already exists.";
@@ -34,6 +34,7 @@ export class Err {
         {
           code: code,
           message: message || "Bad Request",
+          field,
         },
       ],
     };
