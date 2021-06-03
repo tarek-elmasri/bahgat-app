@@ -10,14 +10,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartResponse = void 0;
-const Cart_1 = require("../entity/Cart");
+const entity_1 = require("../entity");
 const type_graphql_1 = require("type-graphql");
 const MyError_1 = require("./MyError");
 let CartResponse = class CartResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => Cart_1.Cart, { nullable: true }),
-    __metadata("design:type", Cart_1.Cart)
+    type_graphql_1.Field(() => entity_1.Cart, { nullable: true }),
+    __metadata("design:type", entity_1.Cart)
 ], CartResponse.prototype, "payload", void 0);
 __decorate([
     type_graphql_1.Field(() => [MyError_1.MyError], { nullable: true }),

@@ -1,13 +1,15 @@
-import { Category } from "../entity/Category";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
-import { CategoryResponse } from "../types/CategoryResponse";
-import { NewCategoryInput } from "../types/CategoryInputs";
-import { UpdateCategoryInput } from "../types/CategoryInputs";
-import { DeleteCategoryInput } from "../types/CategoryInputs";
+import {
+  CategoryResponse,
+  NewCategoryInput,
+  UpdateCategoryInput,
+  DeleteCategoryInput,
+  SuccessResponse,
+} from "../types";
 import { getConnection } from "typeorm";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
-import { SuccessResponse } from "../types/successResponse";
+import { Category } from "../entity";
 
 @Resolver()
 export class CategoryResolver {

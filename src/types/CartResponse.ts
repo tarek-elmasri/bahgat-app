@@ -1,4 +1,4 @@
-import { Cart } from "../entity/Cart";
+import { Cart } from "../entity";
 import { Field, ObjectType } from "type-graphql";
 import { MyError } from "./MyError";
 

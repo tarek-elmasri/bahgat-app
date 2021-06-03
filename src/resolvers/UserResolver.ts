@@ -1,4 +1,3 @@
-import { User } from "../entity/User";
 import {
   Arg,
   Ctx,
@@ -9,17 +8,20 @@ import {
   Resolver,
   UseMiddleware,
 } from "type-graphql";
-import { UserResponse } from "../types/UserResponse";
-import { CreateUserInput, UpdateUserInput } from "../types/UserInputs";
+import { UserResponse } from "../types";
+import {
+  CreateUserInput,
+  UpdateUserInput,
+  SuccessResponse,
+  MyContext,
+  Role,
+} from "../types";
+import { User, Cart } from "../entity";
 import { hash, compare } from "bcryptjs";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
-import { SuccessResponse } from "../types/successResponse";
-import { MyContext } from "../types/MyContext";
 import { isAdmin } from "../middlewares/authorization";
-import { Cart } from "../entity/Cart";
-import { Role } from "../types/Role";
 
 @ObjectType()
 class MeResponse {
@@ -135,7 +137,7 @@ export class UserResolver {
 
       await getConnection()
         .getRepository(User)
-        .update({ uuid: params.uuid }, params.properties);
+        .update({ uuid: params.uuid }, params.fields);
 
       const user = await User.findOne({ where: { uuid: params.uuid } });
       return {

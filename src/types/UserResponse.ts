@@ -1,4 +1,4 @@
-import { User } from "../entity/User";
+import { User } from "../entity";
 import { Field, ObjectType } from "type-graphql";
 import { MyError } from "./MyError";
 

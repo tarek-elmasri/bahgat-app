@@ -6,7 +6,6 @@ import { createConnection, getConnection } from "typeorm";
 import { buildSchema } from "type-graphql";
 import { ItemResolver } from "./resolvers/itemResolvers";
 import { CategoryResolver } from "./resolvers/CategoryResolver";
-import { MyContext } from "./types/MyContext";
 import { UserResolver } from "./resolvers/UserResolver";
 import expressSession from "express-session";
 import { TypeormStore } from "connect-typeorm/out";
@@ -15,8 +14,8 @@ import { CartResolver } from "./resolvers/CartResolver";
 import { itemLoader } from "./loaders/ItemLoader";
 import { cartLoader } from "./loaders/cartLoader";
 import sessionBuilder from "./utils/sessionBuilder";
-import { Role } from "./types/Role";
 import dbConnection from "./utils/dbConnection";
+import { Role, MyContext } from "./types";
 
 declare module "express-session" {
   interface SessionData {

@@ -1,12 +1,8 @@
-import { MyContext } from "../types/MyContext";
+import { MyContext, CartResponse, ItemResponse } from "../types";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
-import { Cart } from "../entity/Cart";
 import { Err } from "../errors/Err";
-import { CartResponse } from "../types/CartResponse";
-import { CartsItems } from "../entity/CartsItems";
-import { Item } from "../entity/Item";
+import { Cart, CartsItems, Item } from "../entity";
 import { ErrCode } from "../errors/codes";
-import { ItemResponse } from "../types/ItemResponse";
 
 @Resolver()
 export class CartResolver {

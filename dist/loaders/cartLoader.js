@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cartLoader = exports.batchCarts = void 0;
 const dataloader_1 = __importDefault(require("dataloader"));
 const typeorm_1 = require("typeorm");
-const CartsItems_1 = require("../entity/CartsItems");
+const entity_1 = require("../entity");
 const batchCarts = (itemIds) => __awaiter(void 0, void 0, void 0, function* () {
-    const cartItems = yield CartsItems_1.CartsItems.find({
+    const cartItems = yield entity_1.CartsItems.find({
         join: {
             alias: "cartItem",
             innerJoinAndSelect: {

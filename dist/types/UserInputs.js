@@ -43,10 +43,6 @@ __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
 ], UpdateUserProperties.prototype, "password", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], UpdateUserProperties.prototype, "role", void 0);
 UpdateUserProperties = __decorate([
     type_graphql_1.InputType()
 ], UpdateUserProperties);
@@ -59,7 +55,7 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => UpdateUserProperties),
     __metadata("design:type", UpdateUserProperties)
-], UpdateUserInput.prototype, "properties", void 0);
+], UpdateUserInput.prototype, "fields", void 0);
 UpdateUserInput = __decorate([
     type_graphql_1.InputType()
 ], UpdateUserInput);

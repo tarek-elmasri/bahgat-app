@@ -1,12 +1,14 @@
-import { Item } from "../entity/Item";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
-import { Category } from "../entity/Category";
-import { newItemInput, updateItemInput } from "../types/ItemInputs";
-import { ItemResponse } from "../types/ItemResponse";
+import { Item, Category } from "../entity";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
-import { SuccessResponse } from "../types/successResponse";
+import {
+  ItemResponse,
+  newItemInput,
+  updateItemInput,
+  SuccessResponse,
+} from "../types";
 
 @Resolver()
 export class ItemResolver {

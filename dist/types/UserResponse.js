@@ -10,14 +10,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResponse = void 0;
-const User_1 = require("../entity/User");
+const entity_1 = require("../entity");
 const type_graphql_1 = require("type-graphql");
 const MyError_1 = require("./MyError");
 let UserResponse = class UserResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => User_1.User, { nullable: true }),
-    __metadata("design:type", User_1.User)
+    type_graphql_1.Field(() => entity_1.User, { nullable: true }),
+    __metadata("design:type", entity_1.User)
 ], UserResponse.prototype, "payload", void 0);
 __decorate([
     type_graphql_1.Field(() => [MyError_1.MyError], { nullable: true }),
@@ -27,4 +27,4 @@ UserResponse = __decorate([
     type_graphql_1.ObjectType()
 ], UserResponse);
 exports.UserResponse = UserResponse;
-//# sourceMappingURL=UserResponse.js.map
+//# sourceMappingURL=userResponse.js.map

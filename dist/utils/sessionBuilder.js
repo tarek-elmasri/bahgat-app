@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Cart_1 = require("../entity/Cart");
-const Role_1 = require("../types/Role");
+const types_1 = require("../types");
 const sessionBuilder = (req, _res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { cartUuid, role, id, userUuid } = req.session;
     if (!cartUuid && !userUuid) {
@@ -20,7 +20,7 @@ const sessionBuilder = (req, _res, next) => __awaiter(void 0, void 0, void 0, fu
         req.session.cartUuid = cart.uuid;
     }
     if (!role && !userUuid) {
-        req.session.role = Role_1.Role.GUEST;
+        req.session.role = types_1.Role.GUEST;
     }
     next();
 });

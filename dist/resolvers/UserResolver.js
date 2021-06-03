@@ -22,26 +22,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
-const User_1 = require("../entity/User");
 const type_graphql_1 = require("type-graphql");
-const UserResponse_1 = require("../types/UserResponse");
-const UserInputs_1 = require("../types/UserInputs");
+const types_1 = require("../types");
+const types_2 = require("../types");
+const entity_1 = require("../entity");
 const bcryptjs_1 = require("bcryptjs");
 const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const typeorm_1 = require("typeorm");
-const successResponse_1 = require("../types/successResponse");
 const authorization_1 = require("../middlewares/authorization");
-const Cart_1 = require("../entity/Cart");
-const Role_1 = require("../types/Role");
 let MeResponse = class MeResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => User_1.User, { nullable: true }),
+    type_graphql_1.Field(() => entity_1.User, { nullable: true }),
     __metadata("design:type", Object)
 ], MeResponse.prototype, "data", void 0);
 __decorate([
-    type_graphql_1.Field(() => Cart_1.Cart, { nullable: true }),
+    type_graphql_1.Field(() => entity_1.Cart, { nullable: true }),
     __metadata("design:type", Object)
 ], MeResponse.prototype, "cart", void 0);
 MeResponse = __decorate([
@@ -50,10 +47,10 @@ MeResponse = __decorate([
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.User.findOne({
+            const user = yield entity_1.User.findOne({
                 where: { uuid: req.session.userUuid },
             });
-            const cart = yield Cart_1.Cart.findOne({
+            const cart = yield entity_1.Cart.findOne({
                 where: {
                     uuid: req.session.cartUuid,
                 },
@@ -65,7 +62,7 @@ let UserResolver = class UserResolver {
     user(uuid) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield User_1.User.findOne({ where: { uuid } });
+                const user = yield entity_1.User.findOne({ where: { uuid } });
                 if (!user)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, " No User Matched this ID.");
                 return { payload: user };
@@ -77,13 +74,13 @@ let UserResolver = class UserResolver {
     }
     users() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield User_1.User.find();
+            return yield entity_1.User.find();
         });
     }
     login(email, password, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield User_1.User.findOne({
+                const user = yield entity_1.User.findOne({
                     where: { email: email.toLowerCase() },
                 });
                 if (!user)
@@ -106,16 +103,16 @@ let UserResolver = class UserResolver {
             console.log(req.session);
             try {
                 const hashedPassword = yield bcryptjs_1.hash(password, 12);
-                const user = User_1.User.create({
+                const user = entity_1.User.create({
                     username,
                     email: email.toLowerCase(),
                     password: hashedPassword,
                     sessionId: req.sessionID,
-                    role: Role_1.Role.USER,
+                    role: types_2.Role.USER,
                 });
                 yield user.save();
                 req.session.userUuid = user.uuid;
-                req.session.role = Role_1.Role.USER;
+                req.session.role = types_2.Role.USER;
                 return {
                     payload: user,
                 };
@@ -128,13 +125,13 @@ let UserResolver = class UserResolver {
     updateUser(params) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const exists = yield User_1.User.findOne({ where: { uuid: params.uuid } });
+                const exists = yield entity_1.User.findOne({ where: { uuid: params.uuid } });
                 if (!exists)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "Invalid UUID for User.");
                 yield typeorm_1.getConnection()
-                    .getRepository(User_1.User)
-                    .update({ uuid: params.uuid }, params.properties);
-                const user = yield User_1.User.findOne({ where: { uuid: params.uuid } });
+                    .getRepository(entity_1.User)
+                    .update({ uuid: params.uuid }, params.fields);
+                const user = yield entity_1.User.findOne({ where: { uuid: params.uuid } });
                 return {
                     payload: user,
                 };
@@ -147,7 +144,7 @@ let UserResolver = class UserResolver {
     deleteUser(uuid) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield User_1.User.delete({ uuid });
+                const result = yield entity_1.User.delete({ uuid });
                 if (result.affected < 1)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No User matches this UUID");
                 return {
@@ -168,7 +165,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "me", null);
 __decorate([
-    type_graphql_1.Query(() => UserResponse_1.UserResponse),
+    type_graphql_1.Query(() => types_1.UserResponse),
     type_graphql_1.UseMiddleware(authorization_1.isAdmin),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
@@ -176,14 +173,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "user", null);
 __decorate([
-    type_graphql_1.Query(() => [User_1.User]),
+    type_graphql_1.Query(() => [entity_1.User]),
     type_graphql_1.UseMiddleware(authorization_1.isAdmin),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "users", null);
 __decorate([
-    type_graphql_1.Query(() => UserResponse_1.UserResponse),
+    type_graphql_1.Query(() => types_1.UserResponse),
     __param(0, type_graphql_1.Arg("email")),
     __param(1, type_graphql_1.Arg("password")),
     __param(2, type_graphql_1.Ctx()),
@@ -192,22 +189,22 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
 __decorate([
-    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
+    type_graphql_1.Mutation(() => types_1.UserResponse),
     __param(0, type_graphql_1.Arg("properties")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UserInputs_1.CreateUserInput, Object]),
+    __metadata("design:paramtypes", [types_2.CreateUserInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
 __decorate([
-    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
-    __param(0, type_graphql_1.Arg("properties", () => UserInputs_1.UpdateUserInput)),
+    type_graphql_1.Mutation(() => types_1.UserResponse),
+    __param(0, type_graphql_1.Arg("properties", () => types_2.UpdateUserInput)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UserInputs_1.UpdateUserInput]),
+    __metadata("design:paramtypes", [types_2.UpdateUserInput]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "updateUser", null);
 __decorate([
-    type_graphql_1.Mutation(() => successResponse_1.SuccessResponse),
+    type_graphql_1.Mutation(() => types_2.SuccessResponse),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

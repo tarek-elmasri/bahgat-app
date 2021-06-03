@@ -1,8 +1,6 @@
-//import DataLoader from "dataloader";
 import DataLoader from "dataloader";
 import { In } from "typeorm";
-import { CartsItems } from "../entity/CartsItems";
-import { Item } from "../entity/Item";
+import { CartsItems, Item } from "../entity";
 
 type BatchFn = (cartIds: readonly string[]) => Promise<Item[][]>;
 export const batchItems: BatchFn = async (cartIds: readonly string[]) => {

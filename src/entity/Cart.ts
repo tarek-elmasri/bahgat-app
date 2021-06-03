@@ -1,4 +1,3 @@
-//import { MyContext } from "../types/MyContext";
 import { Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -8,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { CartsItems } from "./CartsItems";
-//import { Item } from "./Item";
 
 @Entity("carts")
 @ObjectType()

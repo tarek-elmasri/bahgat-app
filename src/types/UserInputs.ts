@@ -22,9 +22,6 @@ class UpdateUserProperties {
 
   @Field(() => String, { nullable: true })
   password: string;
-
-  @Field(() => String, { nullable: true })
-  role: string;
 }
 
 @InputType()
@@ -33,5 +30,5 @@ export class UpdateUserInput {
   uuid: string;
 
   @Field(() => UpdateUserProperties)
-  properties: UpdateUserProperties;
+  fields: UpdateUserProperties;
 }

@@ -22,26 +22,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryResolver = void 0;
-const Category_1 = require("../entity/Category");
 const type_graphql_1 = require("type-graphql");
-const CategoryResponse_1 = require("../types/CategoryResponse");
-const CategoryInputs_1 = require("../types/CategoryInputs");
-const CategoryInputs_2 = require("../types/CategoryInputs");
-const CategoryInputs_3 = require("../types/CategoryInputs");
+const types_1 = require("../types");
 const typeorm_1 = require("typeorm");
 const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
-const successResponse_1 = require("../types/successResponse");
+const entity_1 = require("../entity");
 let CategoryResolver = class CategoryResolver {
     categories() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Category_1.Category.find({ relations: ["items"] });
+            return yield entity_1.Category.find({ relations: ["items"] });
         });
     }
     category(uuid) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const category = yield Category_1.Category.findOne({
+                const category = yield entity_1.Category.findOne({
                     where: { uuid },
                     relations: ["items"],
                 });
@@ -57,7 +53,7 @@ let CategoryResolver = class CategoryResolver {
     createCategory(params) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const category = Category_1.Category.create(params);
+                const category = entity_1.Category.create(params);
                 yield category.save();
                 return {
                     payload: category,
@@ -71,13 +67,13 @@ let CategoryResolver = class CategoryResolver {
     updateCategory(params) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const exists = yield Category_1.Category.findOne({ where: { uuid: params.uuid } });
+                const exists = yield entity_1.Category.findOne({ where: { uuid: params.uuid } });
                 if (!exists)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matches this ID.");
                 yield typeorm_1.getConnection()
-                    .getRepository(Category_1.Category)
+                    .getRepository(entity_1.Category)
                     .update({ uuid: params.uuid }, params.properties);
-                const category = yield Category_1.Category.findOne({ where: { uuid: params.uuid } });
+                const category = yield entity_1.Category.findOne({ where: { uuid: params.uuid } });
                 return {
                     payload: category,
                 };
@@ -93,7 +89,7 @@ let CategoryResolver = class CategoryResolver {
                 if (params.saveDelete) {
                 }
                 const result = yield typeorm_1.getConnection()
-                    .getRepository(Category_1.Category)
+                    .getRepository(entity_1.Category)
                     .delete({ uuid: params.uuid });
                 if (result.affected < 1)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matched this ID.");
@@ -106,37 +102,37 @@ let CategoryResolver = class CategoryResolver {
     }
 };
 __decorate([
-    type_graphql_1.Query(() => [Category_1.Category]),
+    type_graphql_1.Query(() => [entity_1.Category]),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "categories", null);
 __decorate([
-    type_graphql_1.Query(() => CategoryResponse_1.CategoryResponse),
+    type_graphql_1.Query(() => types_1.CategoryResponse),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "category", null);
 __decorate([
-    type_graphql_1.Mutation(() => CategoryResponse_1.CategoryResponse),
+    type_graphql_1.Mutation(() => types_1.CategoryResponse),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CategoryInputs_1.NewCategoryInput]),
+    __metadata("design:paramtypes", [types_1.NewCategoryInput]),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
-    type_graphql_1.Mutation(() => CategoryResponse_1.CategoryResponse),
+    type_graphql_1.Mutation(() => types_1.CategoryResponse),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CategoryInputs_2.UpdateCategoryInput]),
+    __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "updateCategory", null);
 __decorate([
-    type_graphql_1.Mutation(() => successResponse_1.SuccessResponse),
+    type_graphql_1.Mutation(() => types_1.SuccessResponse),
     __param(0, type_graphql_1.Arg("properties")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CategoryInputs_3.DeleteCategoryInput]),
+    __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "deleteCategory", null);
 CategoryResolver = __decorate([

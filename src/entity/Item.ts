@@ -1,4 +1,4 @@
-import { MyContext } from "src/types/MyContext";
+import { MyContext } from "../types";
 import { Ctx, Field, Float, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,

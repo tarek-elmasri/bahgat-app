@@ -1,4 +1,4 @@
-import { Role } from "../types/Role";
+import { Role, MyContext } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -10,7 +10,6 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Cart } from "./Cart";
-import { MyContext } from "src/types/MyContext";
 
 @ObjectType()
 @Entity("users")

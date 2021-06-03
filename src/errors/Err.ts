@@ -1,4 +1,4 @@
-import { MyError } from "../types/MyError";
+import { MyError } from "../types";
 import { ErrCode } from "./codes";
 
 interface ErrorResponse {
