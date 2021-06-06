@@ -7,6 +7,7 @@ const typeorm_1 = require("typeorm");
 const expressSessionConfig = () => {
     const sessionRepository = typeorm_1.getConnection().getRepository(entity_1.Session);
     const expressSessionOptions = {
+        name: "sid",
         resave: false,
         saveUninitialized: false,
         store: new out_1.TypeormStore({

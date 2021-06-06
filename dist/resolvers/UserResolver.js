@@ -30,6 +30,7 @@ const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const typeorm_1 = require("typeorm");
 const authorization_1 = require("../middlewares/authorization");
+const utils_1 = require("../utils");
 let MeResponse = class MeResponse {
 };
 __decorate([
@@ -87,6 +88,7 @@ let UserResolver = class UserResolver {
                 const verified = bcryptjs_1.compare(password, user.password);
                 if (!verified)
                     throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
+                yield utils_1.syncCart(user, req.session);
                 req.session.userUuid = user.uuid;
                 req.session.role = user.role;
                 return {
@@ -100,17 +102,16 @@ let UserResolver = class UserResolver {
     }
     register({ username, password, email }, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(req.session);
             try {
                 const hashedPassword = yield bcryptjs_1.hash(password, 12);
                 const user = entity_1.User.create({
                     username,
                     email: email.toLowerCase(),
                     password: hashedPassword,
-                    sessionId: req.sessionID,
                     role: types_1.Role.USER,
                 });
                 yield user.save();
+                yield entity_1.Cart.update({ uuid: req.session.cartUuid }, { userUuid: user.uuid });
                 req.session.userUuid = user.uuid;
                 req.session.role = types_1.Role.USER;
                 return {

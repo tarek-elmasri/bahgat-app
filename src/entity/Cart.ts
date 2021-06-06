@@ -21,9 +21,6 @@ export class Cart extends BaseEntity {
   @Column({ nullable: true })
   userUuid?: string;
 
-  @Column({ nullable: true })
-  sessionId: string;
-
   @Field(() => [CartsItems])
   @OneToMany(() => CartsItems, (cartItem) => cartItem.cart)
   cartItems: Promise<CartsItems[]>;

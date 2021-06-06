@@ -4,13 +4,11 @@ import { Role } from "../types";
 
 type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export const sessionBuilder: mwFn = async (req, _res, next) => {
-  const { cartUuid, role, id, userUuid } = req.session;
+  const { cartUuid, role, userUuid } = req.session;
 
   if (!cartUuid && !userUuid) {
     //create new cart for session
-    const cart = await Cart.create({
-      sessionId: id,
-    }).save();
+    const cart = await Cart.create().save();
     req.session.cartUuid = cart.uuid;
   }
 

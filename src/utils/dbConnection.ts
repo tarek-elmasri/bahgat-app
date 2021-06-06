@@ -1,3 +1,4 @@
+import { __producation__ } from "../types";
 import { ConnectionOptions } from "typeorm";
 
 export const dbConnection: ConnectionOptions = {
@@ -7,8 +8,8 @@ export const dbConnection: ConnectionOptions = {
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
   database: "chocolate",
-  synchronize: true,
-  logging: true,
+  synchronize: !__producation__,
+  logging: !__producation__,
   entities: ["dist/entity/**/*.js"],
   migrations: ["dist/migration/**/*.js"],
   subscribers: ["dist/subscriber/**/*.js"],

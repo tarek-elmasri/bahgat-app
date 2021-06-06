@@ -63,10 +63,6 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
-    typeorm_1.Column("text", { nullable: true }),
-    __metadata("design:type", String)
-], User.prototype, "sessionId", void 0);
-__decorate([
     type_graphql_1.Field(() => Date),
     typeorm_1.CreateDateColumn(),
     __metadata("design:type", Date)

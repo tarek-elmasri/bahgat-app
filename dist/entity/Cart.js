@@ -24,10 +24,6 @@ __decorate([
     __metadata("design:type", String)
 ], Cart.prototype, "userUuid", void 0);
 __decorate([
-    typeorm_1.Column({ nullable: true }),
-    __metadata("design:type", String)
-], Cart.prototype, "sessionId", void 0);
-__decorate([
     type_graphql_1.Field(() => [CartsItems_1.CartsItems]),
     typeorm_1.OneToMany(() => CartsItems_1.CartsItems, (cartItem) => cartItem.cart),
     __metadata("design:type", Promise)

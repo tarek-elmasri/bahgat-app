@@ -22,6 +22,7 @@ import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
 import { isAdmin, isGuest, isStaff } from "../middlewares/authorization";
+import { syncCart } from "../utils";
 
 @ObjectType()
 class MeResponse {
@@ -90,9 +91,11 @@ export class UserResolver {
       if (!verified)
         throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
 
+      //TODO sync user cart with session cart
+      await syncCart(user, req.session);
+      //update session data
       req.session.userUuid = user.uuid;
       req.session.role = user.role as Role;
-      //TODO sync user cart with session cart
 
       return {
         payload: user,
@@ -108,17 +111,23 @@ export class UserResolver {
     @Arg("properties") { username, password, email }: CreateUserInput,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    console.log(req.session);
     try {
       const hashedPassword = await hash(password, 12);
       const user = User.create({
         username,
         email: email.toLowerCase(),
         password: hashedPassword,
-        sessionId: req.sessionID,
+        //sessionId: req.sessionID,
         role: Role.USER,
       });
       await user.save();
+
+      //linking the current cart in session with the new user
+      await Cart.update(
+        { uuid: req.session.cartUuid },
+        { userUuid: user.uuid }
+      );
+      //updating session data to have the new userId
       req.session.userUuid = user.uuid;
       req.session.role = Role.USER;
 

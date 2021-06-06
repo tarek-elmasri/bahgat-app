@@ -41,10 +41,8 @@ export class CategoryResolver {
     @Arg("properties") params: NewCategoryInput
   ): Promise<CategoryResponse> {
     try {
-      const category: Category = Category.create(params);
-      await category.save();
       return {
-        payload: category,
+        payload: await Category.create(params).save(),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
@@ -58,7 +56,6 @@ export class CategoryResolver {
   ): Promise<CategoryResponse> {
     try {
       const exists = await Category.findOne({ where: { uuid: params.uuid } });
-
       if (!exists)
         throw new Err(ErrCode.NOT_FOUND, "No category matches this ID.");
 

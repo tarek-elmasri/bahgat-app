@@ -31,12 +31,11 @@ let CartResolver = class CartResolver {
     myCart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const cart = yield entity_1.Cart.findOne({
-                    where: { sessionId: req.sessionID },
-                    relations: ["cartItems"],
-                });
                 return {
-                    payload: cart,
+                    payload: yield entity_1.Cart.findOne({
+                        where: { uuid: req.session.cartUuid },
+                        relations: ["cartItems"],
+                    }),
                 };
             }
             catch (err) {
@@ -50,12 +49,11 @@ let CartResolver = class CartResolver {
                 const item = yield entity_1.Item.findOne({ where: { uuid: itemUuid } });
                 if (!item)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Item found for this ID.");
-                const newCartItem = entity_1.CartsItems.create({
+                yield entity_1.CartsItems.create({
                     cartUuid: req.session.cartUuid,
                     itemUuid,
                     quantity,
-                });
-                yield newCartItem.save();
+                }).save();
                 return { payload: item };
             }
             catch (err) {

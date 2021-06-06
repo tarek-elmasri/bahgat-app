@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dbConnection = void 0;
+const types_1 = require("../types");
 exports.dbConnection = {
     type: "postgres",
     host: "localhost",
@@ -8,8 +9,8 @@ exports.dbConnection = {
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: "chocolate",
-    synchronize: true,
-    logging: true,
+    synchronize: !types_1.__producation__,
+    logging: !types_1.__producation__,
     entities: ["dist/entity/**/*.js"],
     migrations: ["dist/migration/**/*.js"],
     subscribers: ["dist/subscriber/**/*.js"],

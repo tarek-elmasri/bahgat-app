@@ -54,10 +54,8 @@ let CategoryResolver = class CategoryResolver {
     createCategory(params) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const category = entity_1.Category.create(params);
-                yield category.save();
                 return {
-                    payload: category,
+                    payload: yield entity_1.Category.create(params).save(),
                 };
             }
             catch (err) {

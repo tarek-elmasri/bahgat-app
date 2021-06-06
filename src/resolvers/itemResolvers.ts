@@ -52,7 +52,7 @@ export class ItemResolver {
           "No Category matches this Category ID."
         );
 
-      const item: Item = Item.create(params);
+      const item = Item.create(params);
 
       await item.save();
       return {

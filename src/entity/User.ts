@@ -34,8 +34,8 @@ export class User extends BaseEntity {
   @Column({ default: "USER" })
   role: string;
 
-  @Column("text", { nullable: true })
-  sessionId: string;
+  // @Column("text", { nullable: true })
+  // sessionId: string;
 
   @Field(() => Date)
   @CreateDateColumn()

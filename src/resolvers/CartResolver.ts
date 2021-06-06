@@ -9,13 +9,11 @@ export class CartResolver {
   @Query(() => CartResponse)
   async myCart(@Ctx() { req }: MyContext): Promise<CartResponse> {
     try {
-      const cart = await Cart.findOne({
-        where: { sessionId: req.sessionID },
-        relations: ["cartItems"],
-      });
-
       return {
-        payload: cart,
+        payload: await Cart.findOne({
+          where: { uuid: req.session.cartUuid },
+          relations: ["cartItems"],
+        }),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
@@ -32,13 +30,11 @@ export class CartResolver {
       const item = await Item.findOne({ where: { uuid: itemUuid } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item found for this ID.");
 
-      const newCartItem = CartsItems.create({
+      await CartsItems.create({
         cartUuid: req.session.cartUuid,
         itemUuid,
         quantity,
-      });
-
-      await newCartItem.save();
+      }).save();
 
       return { payload: item };
     } catch (err) {

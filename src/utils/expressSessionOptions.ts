@@ -7,6 +7,7 @@ export const expressSessionConfig = (): SessionOptions => {
   const sessionRepository = getConnection().getRepository(Session);
 
   const expressSessionOptions: SessionOptions = {
+    name: "sid",
     resave: false,
     saveUninitialized: false,
     store: new TypeormStore({

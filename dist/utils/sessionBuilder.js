@@ -13,11 +13,9 @@ exports.sessionBuilder = void 0;
 const Cart_1 = require("../entity/Cart");
 const types_1 = require("../types");
 const sessionBuilder = (req, _res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { cartUuid, role, id, userUuid } = req.session;
+    const { cartUuid, role, userUuid } = req.session;
     if (!cartUuid && !userUuid) {
-        const cart = yield Cart_1.Cart.create({
-            sessionId: id,
-        }).save();
+        const cart = yield Cart_1.Cart.create().save();
         req.session.cartUuid = cart.uuid;
     }
     if (!role && !userUuid) {
