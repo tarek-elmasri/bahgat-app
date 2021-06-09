@@ -33,6 +33,7 @@ export class Item extends BaseEntity {
   @Column("float")
   price: number;
 
+  //to make this field allowable to null and remove next infinite stock
   @Field(() => Int)
   @Column("int")
   stock: number;

@@ -47,7 +47,7 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => UpdateProperties),
     __metadata("design:type", UpdateProperties)
-], UpdateCategoryInput.prototype, "properties", void 0);
+], UpdateCategoryInput.prototype, "fields", void 0);
 UpdateCategoryInput = __decorate([
     type_graphql_1.InputType()
 ], UpdateCategoryInput);

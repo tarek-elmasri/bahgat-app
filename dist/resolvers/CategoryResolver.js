@@ -29,6 +29,7 @@ const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const entity_1 = require("../entity");
 const authorization_1 = require("../middlewares/authorization");
+const myValidator_1 = require("../utils/validators/myValidator");
 let CategoryResolver = class CategoryResolver {
     categories() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,11 +52,14 @@ let CategoryResolver = class CategoryResolver {
             }
         });
     }
-    createCategory(params) {
+    createCategory(input) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const formErrors = yield myValidator_1.myValidator(input, myValidator_1.createCategoryRules);
+                if (formErrors)
+                    return { errors: formErrors };
                 return {
-                    payload: yield entity_1.Category.create(params).save(),
+                    payload: yield entity_1.Category.create(input).save(),
                 };
             }
             catch (err) {
@@ -63,16 +67,17 @@ let CategoryResolver = class CategoryResolver {
             }
         });
     }
-    updateCategory(params) {
+    updateCategory({ uuid, fields }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const exists = yield entity_1.Category.findOne({ where: { uuid: params.uuid } });
+                const formErrors = yield myValidator_1.myValidator(fields, myValidator_1.createCategoryRules);
+                if (formErrors)
+                    return { errors: formErrors };
+                const exists = yield entity_1.Category.findOne({ where: { uuid } });
                 if (!exists)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matches this ID.");
-                yield typeorm_1.getConnection()
-                    .getRepository(entity_1.Category)
-                    .update({ uuid: params.uuid }, params.properties);
-                const category = yield entity_1.Category.findOne({ where: { uuid: params.uuid } });
+                yield typeorm_1.getConnection().getRepository(entity_1.Category).update({ uuid }, fields);
+                const category = yield entity_1.Category.findOne({ where: { uuid } });
                 return {
                     payload: category,
                 };
@@ -82,14 +87,14 @@ let CategoryResolver = class CategoryResolver {
             }
         });
     }
-    deleteCategory(params) {
+    deleteCategory({ uuid, saveDelete }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (params.saveDelete) {
+                if (saveDelete) {
                 }
                 const result = yield typeorm_1.getConnection()
                     .getRepository(entity_1.Category)
-                    .delete({ uuid: params.uuid });
+                    .delete({ uuid });
                 if (result.affected < 1)
                     throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matched this ID.");
                 return { ok: true };
@@ -116,7 +121,7 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
     type_graphql_1.UseMiddleware(authorization_1.isStaff),
-    __param(0, type_graphql_1.Arg("properties")),
+    __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.NewCategoryInput]),
     __metadata("design:returntype", Promise)
@@ -124,7 +129,7 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
     type_graphql_1.UseMiddleware(authorization_1.isStaff),
-    __param(0, type_graphql_1.Arg("properties")),
+    __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
     __metadata("design:returntype", Promise)
@@ -132,7 +137,7 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
     type_graphql_1.UseMiddleware(authorization_1.isStaff),
-    __param(0, type_graphql_1.Arg("properties")),
+    __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),
     __metadata("design:returntype", Promise)

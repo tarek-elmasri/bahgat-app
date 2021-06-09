@@ -8,5 +8,6 @@ var ErrCode;
     ErrCode["INVALID_LOGIN"] = "INVALID_LOGIN";
     ErrCode["NOT_LOGGED_IN"] = "NOT_LOGGED_IN";
     ErrCode["NOT_AUTHORIZED"] = " NOT_AUTHORIZED";
+    ErrCode["INVAID_INPUT_PARAMETER"] = "INVALID_INPUT_PARAMETER";
 })(ErrCode = exports.ErrCode || (exports.ErrCode = {}));
 //# sourceMappingURL=codes.js.map

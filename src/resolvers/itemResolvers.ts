@@ -10,6 +10,7 @@ import {
   SuccessResponse,
 } from "../types";
 import { isStaff } from "../middlewares/authorization";
+import { createItemRules, myValidator } from "../utils/validators/myValidator";
 
 @Resolver()
 export class ItemResolver {
@@ -38,12 +39,13 @@ export class ItemResolver {
 
   @Mutation(() => ItemResponse)
   @UseMiddleware(isStaff)
-  async createItem(
-    @Arg("properties") params: newItemInput
-  ): Promise<ItemResponse> {
+  async createItem(@Arg("input") input: newItemInput): Promise<ItemResponse> {
     try {
+      const formErrors = await myValidator(input, createItemRules);
+      if (formErrors) return { errors: formErrors };
+
       const category = await Category.findOne({
-        where: { uuid: params.categoryUuid },
+        where: { uuid: input.categoryUuid },
       });
 
       if (!category)
@@ -52,11 +54,8 @@ export class ItemResolver {
           "No Category matches this Category ID."
         );
 
-      const item = Item.create(params);
-
-      await item.save();
       return {
-        payload: item,
+        payload: await Item.create(input).save(),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
@@ -66,18 +65,21 @@ export class ItemResolver {
   @Mutation(() => ItemResponse)
   @UseMiddleware(isStaff)
   async updateItem(
-    @Arg("params") params: updateItemInput
+    @Arg("input") { uuid, properties }: updateItemInput
   ): Promise<ItemResponse> {
     try {
-      const item = await Item.findOne({ where: { uuid: params.uuid } });
+      const item = await Item.findOne({ where: { uuid } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item Matches this ID.");
 
-      await getConnection()
-        .getRepository(Item)
-        .update({ uuid: params.uuid }, params.properties);
+      //matching the required partial fields for validation
+      const formInput = { name: properties.name || item.name };
+      const formErrors = await myValidator(formInput, createItemRules);
+      if (formErrors) return { errors: formErrors };
+
+      await getConnection().getRepository(Item).update({ uuid }, properties);
 
       const updated = await Item.findOne({
-        where: { uuid: params.uuid },
+        where: { uuid },
         relations: ["category"],
       });
       return {

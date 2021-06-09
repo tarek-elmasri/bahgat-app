@@ -15,6 +15,7 @@ import {
   MyContext,
   Role,
   UserResponse,
+  LoginInput,
 } from "../types";
 import { User, Cart } from "../entity";
 import { hash, compare } from "bcryptjs";
@@ -23,6 +24,7 @@ import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
 import { isAdmin, isGuest, isStaff } from "../middlewares/authorization";
 import { syncCart } from "../utils";
+import { createUserRules, myValidator } from "../utils/validators/myValidator";
 
 @ObjectType()
 class MeResponse {
@@ -74,19 +76,18 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   @UseMiddleware(isGuest)
   async login(
-    @Arg("email") email: string,
-    @Arg("password") password: string,
+    @Arg("input") input: LoginInput,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     try {
       const user = await User.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: input.email.normalize().toLowerCase() },
       });
 
       if (!user)
         throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or password.");
 
-      const verified = compare(password, user.password);
+      const verified = compare(input.password, user.password);
 
       if (!verified)
         throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
@@ -108,16 +109,19 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   @UseMiddleware(isGuest)
   async register(
-    @Arg("properties") { username, password, email }: CreateUserInput,
+    @Arg("input") input: CreateUserInput,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     try {
+      const formErrors = await myValidator(input, createUserRules);
+      if (formErrors) return { errors: formErrors };
+
+      const { username, email, password } = input;
       const hashedPassword = await hash(password, 12);
       const user = User.create({
         username,
-        email: email.toLowerCase(),
+        email: email.normalize().toLowerCase(),
         password: hashedPassword,
-        //sessionId: req.sessionID,
         role: Role.USER,
       });
       await user.save();
@@ -142,17 +146,27 @@ export class UserResolver {
   //TODO add authorization same user or admin
   @Mutation(() => UserResponse)
   async updateUser(
-    @Arg("properties", () => UpdateUserInput) params: UpdateUserInput
+    @Arg("properties", () => UpdateUserInput) { uuid, fields }: UpdateUserInput
   ): Promise<UserResponse> {
     try {
-      const exists = await User.findOne({ where: { uuid: params.uuid } });
-      if (!exists) throw new Err(ErrCode.NOT_FOUND, "Invalid UUID for User.");
+      const existedUser = await User.findOne({ where: { uuid } });
+      if (!existedUser)
+        throw new Err(ErrCode.NOT_FOUND, "Invalid UUID for User.");
 
-      await getConnection()
-        .getRepository(User)
-        .update({ uuid: params.uuid }, params.fields);
+      //matching the partial form for validation fn
+      const userForm = {
+        username: fields.username || existedUser.username,
+        email: fields.email.normalize().toLowerCase() || existedUser.email,
+        password: fields.password || existedUser.password,
+      };
 
-      const user = await User.findOne({ where: { uuid: params.uuid } });
+      //validating the form
+      const formErrors = await myValidator(userForm, createUserRules);
+      if (formErrors) return { errors: formErrors };
+
+      await getConnection().getRepository(User).update({ uuid }, fields);
+
+      const user = await User.findOne({ where: { uuid } });
       return {
         payload: user,
       };

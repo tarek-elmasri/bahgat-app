@@ -32,3 +32,12 @@ export class UpdateUserInput {
   @Field(() => UpdateUserProperties)
   fields: UpdateUserProperties;
 }
+
+@InputType()
+export class LoginInput {
+  @Field(() => String)
+  email: string;
+
+  @Field(() => String)
+  password: string;
+}

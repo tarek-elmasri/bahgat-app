@@ -11,6 +11,10 @@ import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { Category } from "../entity";
 import { isStaff } from "../middlewares/authorization";
+import {
+  createCategoryRules,
+  myValidator,
+} from "../utils/validators/myValidator";
 
 @Resolver()
 export class CategoryResolver {
@@ -38,11 +42,14 @@ export class CategoryResolver {
   @Mutation(() => CategoryResponse)
   @UseMiddleware(isStaff)
   async createCategory(
-    @Arg("properties") params: NewCategoryInput
+    @Arg("input") input: NewCategoryInput
   ): Promise<CategoryResponse> {
     try {
+      const formErrors = await myValidator(input, createCategoryRules);
+      if (formErrors) return { errors: formErrors };
+
       return {
-        payload: await Category.create(params).save(),
+        payload: await Category.create(input).save(),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
@@ -52,18 +59,19 @@ export class CategoryResolver {
   @Mutation(() => CategoryResponse)
   @UseMiddleware(isStaff)
   async updateCategory(
-    @Arg("properties") params: UpdateCategoryInput
+    @Arg("input") { uuid, fields }: UpdateCategoryInput
   ): Promise<CategoryResponse> {
     try {
-      const exists = await Category.findOne({ where: { uuid: params.uuid } });
+      const formErrors = await myValidator(fields, createCategoryRules);
+      if (formErrors) return { errors: formErrors };
+
+      const exists = await Category.findOne({ where: { uuid } });
       if (!exists)
         throw new Err(ErrCode.NOT_FOUND, "No category matches this ID.");
 
-      await getConnection()
-        .getRepository(Category)
-        .update({ uuid: params.uuid }, params.properties);
+      await getConnection().getRepository(Category).update({ uuid }, fields);
 
-      const category = await Category.findOne({ where: { uuid: params.uuid } });
+      const category = await Category.findOne({ where: { uuid } });
 
       return {
         payload: category,
@@ -76,16 +84,16 @@ export class CategoryResolver {
   @Mutation(() => SuccessResponse)
   @UseMiddleware(isStaff)
   async deleteCategory(
-    @Arg("properties") params: DeleteCategoryInput
+    @Arg("input") { uuid, saveDelete }: DeleteCategoryInput
   ): Promise<SuccessResponse> {
     try {
-      if (params.saveDelete) {
+      if (saveDelete) {
         //check if category have any chocolates
       }
 
       const result = await getConnection()
         .getRepository(Category)
-        .delete({ uuid: params.uuid });
+        .delete({ uuid });
       if (result.affected! < 1)
         throw new Err(ErrCode.NOT_FOUND, "No category matched this ID.");
 
