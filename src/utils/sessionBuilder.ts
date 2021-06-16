@@ -154,11 +154,3 @@ export const resetSession = async (
   req.session = session;
   req.user = undefined;
 };
-
-// const stringifyCooie = (data: any) => {
-//   let result: string = "";
-//   Object.keys(data).forEach((key) => {
-//     result += `${key}=${data[key]};`;
-//   });
-//   return result;
-// };
