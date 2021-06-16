@@ -1,1 +1,3 @@
-console.log("   ...Tarek@gmail.com..  ".normalize());
+const err = { dsd: "sds" };
+
+console.log();

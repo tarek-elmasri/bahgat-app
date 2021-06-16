@@ -11,26 +11,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Session = void 0;
 const typeorm_1 = require("typeorm");
-let Session = class Session {
-    constructor() {
-        this.expiredAt = Date.now();
-        this.id = "";
-        this.json = "";
-    }
+let Session = class Session extends typeorm_1.BaseEntity {
 };
 __decorate([
-    typeorm_1.Index(),
-    typeorm_1.Column("bigint"),
-    __metadata("design:type", Object)
-], Session.prototype, "expiredAt", void 0);
-__decorate([
-    typeorm_1.PrimaryColumn("varchar", { length: 255 }),
-    __metadata("design:type", Object)
+    typeorm_1.PrimaryGeneratedColumn("uuid"),
+    __metadata("design:type", String)
 ], Session.prototype, "id", void 0);
 __decorate([
-    typeorm_1.Column("text"),
-    __metadata("design:type", Object)
-], Session.prototype, "json", void 0);
+    typeorm_1.Column(),
+    __metadata("design:type", String)
+], Session.prototype, "cartUuid", void 0);
+__decorate([
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", String)
+], Session.prototype, "access_token", void 0);
+__decorate([
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", String)
+], Session.prototype, "refresh_token", void 0);
 Session = __decorate([
     typeorm_1.Entity()
 ], Session);

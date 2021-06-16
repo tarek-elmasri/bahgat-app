@@ -25,6 +25,7 @@ exports.User = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const Cart_1 = require("./Cart");
+const utils_1 = require("../utils");
 let User = class User extends typeorm_1.BaseEntity {
     cart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -35,6 +36,9 @@ let User = class User extends typeorm_1.BaseEntity {
                 relations: ["cartItems"],
             });
         });
+    }
+    setRefreshToken() {
+        this.refresh_token = utils_1.createRefreshToken({ userUuid: this.uuid });
     }
 };
 __decorate([
@@ -63,6 +67,12 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    typeorm_1.Index(),
+    __metadata("design:type", String)
+], User.prototype, "refresh_token", void 0);
+__decorate([
     type_graphql_1.Field(() => Date),
     typeorm_1.CreateDateColumn(),
     __metadata("design:type", Date)
@@ -79,6 +89,12 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], User.prototype, "cart", null);
+__decorate([
+    typeorm_1.BeforeInsert(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], User.prototype, "setRefreshToken", null);
 User = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity("users")

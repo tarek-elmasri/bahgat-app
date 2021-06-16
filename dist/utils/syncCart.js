@@ -12,7 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.syncCart = void 0;
 const typeorm_1 = require("typeorm");
 const entity_1 = require("../entity");
-const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* () {
+const sessionBuilder_1 = require("./sessionBuilder");
+const syncCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { session, user } = req;
     const userCart = yield entity_1.Cart.findOne({
         where: { userUuid: user.uuid },
     });
@@ -20,7 +22,7 @@ const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* 
         .getRepository(entity_1.CartsItems)
         .createQueryBuilder()
         .update()
-        .set({ cartUuid: userCart === null || userCart === void 0 ? void 0 : userCart.uuid })
+        .set({ cartUuid: userCart.uuid })
         .where(`cartUuid = :cartUuid`, { cartUuid: session.cartUuid })
         .execute();
     yield typeorm_1.getConnection()
@@ -29,7 +31,8 @@ const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* 
         .from(entity_1.Cart)
         .where("uuid = :uuid", { uuid: session.cartUuid })
         .execute();
-    session.cartUuid = userCart === null || userCart === void 0 ? void 0 : userCart.uuid;
+    session.cartUuid = userCart.uuid;
+    yield sessionBuilder_1.updateSession(session, user, req, res);
 });
 exports.syncCart = syncCart;
 //# sourceMappingURL=syncCart.js.map

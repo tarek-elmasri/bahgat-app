@@ -1,6 +1,6 @@
 import { cartLoader } from "../loaders/cartLoader";
 import { itemLoader } from "../loaders/ItemLoader";
-import { Request, Response } from "express";
+import { Response, Request } from "express";
 
 export interface MyContext {
   req: Request;

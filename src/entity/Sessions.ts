@@ -1,15 +1,16 @@
-import { ISession } from "connect-typeorm";
-import { Column, Entity, Index, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Session implements ISession {
-  @Index()
-  @Column("bigint")
-  public expiredAt = Date.now();
+export class Session extends BaseEntity {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @PrimaryColumn("varchar", { length: 255 })
-  public id = "";
+  @Column()
+  cartUuid: string;
 
-  @Column("text")
-  public json = "";
+  @Column({ nullable: true })
+  access_token?: string;
+
+  @Column({ nullable: true })
+  refresh_token?: string;
 }

@@ -48,16 +48,13 @@ MeResponse = __decorate([
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield entity_1.User.findOne({
-                where: { uuid: req.session.userUuid },
-            });
             const cart = yield entity_1.Cart.findOne({
                 where: {
                     uuid: req.session.cartUuid,
                 },
                 relations: ["cartItems"],
             });
-            return { data: user, cart };
+            return { data: req.user, cart };
         });
     }
     user(uuid) {
@@ -78,7 +75,7 @@ let UserResolver = class UserResolver {
             return yield entity_1.User.find();
         });
     }
-    login(input, { req }) {
+    login(input, { req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = yield entity_1.User.findOne({
@@ -89,9 +86,8 @@ let UserResolver = class UserResolver {
                 const verified = bcryptjs_1.compare(input.password, user.password);
                 if (!verified)
                     throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
-                yield utils_1.syncCart(user, req.session);
-                req.session.userUuid = user.uuid;
-                req.session.role = user.role;
+                req.user = user;
+                yield utils_1.syncCart(req, res);
                 return {
                     payload: user,
                 };
@@ -101,7 +97,7 @@ let UserResolver = class UserResolver {
             }
         });
     }
-    register(input, { req }) {
+    register(input, { req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const formErrors = yield myValidator_1.myValidator(input, myValidator_1.createUserRules);
@@ -117,8 +113,8 @@ let UserResolver = class UserResolver {
                 });
                 yield user.save();
                 yield entity_1.Cart.update({ uuid: req.session.cartUuid }, { userUuid: user.uuid });
-                req.session.userUuid = user.uuid;
-                req.session.role = types_1.Role.USER;
+                req.session.refresh_token = user.refresh_token;
+                yield utils_1.updateSession(req.session, user, req, res);
                 return {
                     payload: user,
                 };

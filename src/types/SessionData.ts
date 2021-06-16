@@ -1,9 +1,10 @@
-import { Role } from "./Role";
+import { User, Session } from "../entity";
 
-declare module "express-session" {
-  interface SessionData {
-    userUuid?: string;
-    cartUuid?: string;
-    role?: Role;
+declare global {
+  namespace Express {
+    export interface Request {
+      user?: User;
+      session: Session;
+    }
   }
 }

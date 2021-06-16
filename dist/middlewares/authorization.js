@@ -14,9 +14,9 @@ const types_1 = require("../types");
 const Err_1 = require("../errors/Err");
 const codes_1 = require("../errors/codes");
 const isAuthorized = ({ req }, next, key) => __awaiter(void 0, void 0, void 0, function* () {
-    const { role } = req.session;
+    var _a;
+    const role = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) || types_1.Role.GUEST;
     let pass = false;
-    console.log("key: ", key, " role :", role);
     if (key === types_1.Role.STAFF) {
         pass = role === types_1.Role.STAFF || role === types_1.Role.ADMIN;
     }

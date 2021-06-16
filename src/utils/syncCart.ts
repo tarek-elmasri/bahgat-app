@@ -1,15 +1,15 @@
-import { Session, SessionData } from "express-session";
 import { getConnection } from "typeorm";
-import { Cart, CartsItems, User } from "../entity";
+import { Cart, CartsItems } from "../entity";
+import { updateSession } from "./sessionBuilder";
+import { Request, Response } from "express";
 
-type SyncCartFn = (
-  user: User,
-  session: Session & Partial<SessionData>
-) => Promise<void>;
+type SyncCartFn = (req: Request, res: Response) => Promise<void>;
 
-export const syncCart: SyncCartFn = async (user, session) => {
+export const syncCart: SyncCartFn = async (req, res) => {
+  const { session, user } = req;
+
   const userCart = await Cart.findOne({
-    where: { userUuid: user.uuid },
+    where: { userUuid: user!.uuid },
   });
 
   //updating cartItems to the user Cart
@@ -17,7 +17,7 @@ export const syncCart: SyncCartFn = async (user, session) => {
     .getRepository(CartsItems)
     .createQueryBuilder()
     .update()
-    .set({ cartUuid: userCart?.uuid })
+    .set({ cartUuid: userCart!.uuid })
     .where(`cartUuid = :cartUuid`, { cartUuid: session.cartUuid }) //current session cart
     .execute();
 
@@ -30,5 +30,6 @@ export const syncCart: SyncCartFn = async (user, session) => {
     .execute();
 
   //setting current session to user cart
-  session.cartUuid = userCart?.uuid;
+  session.cartUuid = userCart!.uuid;
+  await updateSession(session, user!, req, res);
 };

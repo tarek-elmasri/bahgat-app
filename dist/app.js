@@ -14,15 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 require("dotenv/config");
-require("./types/SessionData");
 const express_1 = __importDefault(require("express"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const typeorm_1 = require("typeorm");
-const express_session_1 = __importDefault(require("express-session"));
 const utils_1 = require("./utils");
 const app = express_1.default();
 (() => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection(utils_1.dbConnection);
-    app.use(express_session_1.default(utils_1.expressSessionConfig()));
+    app.use(cookie_parser_1.default());
     app.use(utils_1.sessionBuilder);
     const graphqlServer = yield utils_1.apolloServerConfig();
     graphqlServer.applyMiddleware({ app });

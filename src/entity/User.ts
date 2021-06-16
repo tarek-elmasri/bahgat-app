@@ -2,6 +2,7 @@ import { MyContext } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,6 +11,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Cart } from "./Cart";
+import { createRefreshToken } from "../utils";
 
 @ObjectType()
 @Entity("users")
@@ -34,8 +36,10 @@ export class User extends BaseEntity {
   @Column({ default: "USER" })
   role: string;
 
-  // @Column("text", { nullable: true })
-  // sessionId: string;
+  @Field()
+  @Column()
+  @Index()
+  refresh_token: string;
 
   @Field(() => Date)
   @CreateDateColumn()
@@ -53,5 +57,10 @@ export class User extends BaseEntity {
       },
       relations: ["cartItems"],
     });
+  }
+
+  @BeforeInsert()
+  setRefreshToken() {
+    this.refresh_token = createRefreshToken({ userUuid: this.uuid });
   }
 }

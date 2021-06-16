@@ -1,23 +1,16 @@
 import "reflect-metadata";
 import "dotenv/config";
-import "./types/SessionData";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { createConnection } from "typeorm";
-import expressSession from "express-session";
-import {
-  sessionBuilder,
-  expressSessionConfig,
-  apolloServerConfig,
-  dbConnection,
-} from "./utils";
+import { sessionBuilder, apolloServerConfig, dbConnection } from "./utils";
 
 const app = express();
 
 (async () => {
   await createConnection(dbConnection);
-
-  app.use(expressSession(expressSessionConfig()));
-
+  //use cookies middleware
+  app.use(cookieParser());
   //middleware to build session parameters
   app.use(sessionBuilder);
 

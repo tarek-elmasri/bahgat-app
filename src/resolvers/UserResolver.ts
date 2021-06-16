@@ -23,7 +23,7 @@ import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
 import { isAdmin, isGuest, isStaff } from "../middlewares/authorization";
-import { syncCart } from "../utils";
+import { syncCart, updateSession } from "../utils";
 import { createUserRules, myValidator } from "../utils/validators/myValidator";
 
 @ObjectType()
@@ -39,10 +39,6 @@ class MeResponse {
 export class UserResolver {
   @Query(() => MeResponse, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<MeResponse> {
-    const user = await User.findOne({
-      where: { uuid: req.session.userUuid },
-    });
-
     const cart = await Cart.findOne({
       where: {
         uuid: req.session.cartUuid,
@@ -50,7 +46,7 @@ export class UserResolver {
       relations: ["cartItems"],
     });
 
-    return { data: user, cart };
+    return { data: req.user, cart };
   }
 
   @Query(() => UserResponse)
@@ -77,7 +73,7 @@ export class UserResolver {
   @UseMiddleware(isGuest)
   async login(
     @Arg("input") input: LoginInput,
-    @Ctx() { req }: MyContext
+    @Ctx() { req, res }: MyContext
   ): Promise<UserResponse> {
     try {
       const user = await User.findOne({
@@ -93,10 +89,9 @@ export class UserResolver {
         throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
 
       //TODO sync user cart with session cart
-      await syncCart(user, req.session);
       //update session data
-      req.session.userUuid = user.uuid;
-      req.session.role = user.role as Role;
+      req.user = user;
+      await syncCart(req, res);
 
       return {
         payload: user,
@@ -110,7 +105,7 @@ export class UserResolver {
   @UseMiddleware(isGuest)
   async register(
     @Arg("input") input: CreateUserInput,
-    @Ctx() { req }: MyContext
+    @Ctx() { req, res }: MyContext
   ): Promise<UserResponse> {
     try {
       const formErrors = await myValidator(input, createUserRules);
@@ -132,8 +127,8 @@ export class UserResolver {
         { userUuid: user.uuid }
       );
       //updating session data to have the new userId
-      req.session.userUuid = user.uuid;
-      req.session.role = Role.USER;
+      req.session.refresh_token = user.refresh_token;
+      await updateSession(req.session, user, req, res);
 
       return {
         payload: user,

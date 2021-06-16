@@ -10,11 +10,10 @@ type AuthorizationFn = (
 ) => Promise<any>;
 
 const isAuthorized: AuthorizationFn = async ({ req }, next, key) => {
-  const { role } = req.session;
+  const role = req.user?.role || Role.GUEST;
 
   let pass = false;
 
-  console.log("key: ", key, " role :", role);
   if (key === Role.STAFF) {
     pass = role === Role.STAFF || role === Role.ADMIN;
   } else {

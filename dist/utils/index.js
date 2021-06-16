@@ -12,7 +12,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./apolloServerConfig"), exports);
 __exportStar(require("./dbConnection"), exports);
-__exportStar(require("./expressSessionOptions"), exports);
 __exportStar(require("./sessionBuilder"), exports);
 __exportStar(require("./syncCart"), exports);
 //# sourceMappingURL=index.js.map
