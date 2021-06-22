@@ -40,7 +40,6 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CategoryResponse)
-  @UseMiddleware(isStaff)
   async createCategory(
     @Arg("input") input: NewCategoryInput
   ): Promise<CategoryResponse> {

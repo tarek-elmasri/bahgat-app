@@ -30,7 +30,7 @@ __decorate([
     __metadata("design:type", String)
 ], Session.prototype, "refresh_token", void 0);
 Session = __decorate([
-    typeorm_1.Entity()
+    typeorm_1.Entity("sessions")
 ], Session);
 exports.Session = Session;
 //# sourceMappingURL=Sessions.js.map

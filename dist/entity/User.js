@@ -26,6 +26,7 @@ const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const Cart_1 = require("./Cart");
 const utils_1 = require("../utils");
+const Authorization_1 = require("./Authorization");
 let User = class User extends typeorm_1.BaseEntity {
     cart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -82,6 +83,21 @@ __decorate([
     typeorm_1.UpdateDateColumn(),
     __metadata("design:type", Date)
 ], User.prototype, "updatedAt", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "authorizationId", void 0);
+__decorate([
+    type_graphql_1.Field(() => Authorization_1.Authorization, { nullable: true }),
+    typeorm_1.OneToOne(() => Authorization_1.Authorization, (auth) => auth.user, {
+        onDelete: "CASCADE",
+        cascade: true,
+        nullable: true,
+    }),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Authorization_1.Authorization)
+], User.prototype, "authorization", void 0);
 __decorate([
     type_graphql_1.Field(() => Cart_1.Cart),
     __param(0, type_graphql_1.Ctx()),

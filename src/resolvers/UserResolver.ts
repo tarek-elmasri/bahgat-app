@@ -11,7 +11,6 @@ import {
 import {
   CreateUserInput,
   UpdateUserInput,
-  SuccessResponse,
   MyContext,
   Role,
   UserResponse,
@@ -22,7 +21,7 @@ import { hash, compare } from "bcryptjs";
 import { Err } from "../errors/Err";
 import { ErrCode } from "../errors/codes";
 import { getConnection } from "typeorm";
-import { isAdmin, isGuest, isStaff } from "../middlewares/authorization";
+import { isGuest } from "../middlewares/authorization";
 import { syncCart, updateSession } from "../utils";
 import { createUserRules, myValidator } from "../utils/validators/myValidator";
 
@@ -46,31 +45,13 @@ export class UserResolver {
       relations: ["cartItems"],
     });
 
+    console.log(req.user);
+
     return { data: req.user, cart };
   }
 
-  @Query(() => UserResponse)
-  @UseMiddleware(isStaff)
-  async user(@Arg("uuid") uuid: string): Promise<UserResponse> {
-    try {
-      const user = await User.findOne({ where: { uuid } });
-
-      if (!user) throw new Err(ErrCode.NOT_FOUND, " No User Matched this ID.");
-
-      return { payload: user };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAdmin)
-  async users(): Promise<User[]> {
-    return await User.find();
-  }
-
   @Mutation(() => UserResponse)
-  @UseMiddleware(isGuest)
+  // @UseMiddleware(isGuest)
   async login(
     @Arg("input") input: LoginInput,
     @Ctx() { req, res }: MyContext
@@ -78,6 +59,7 @@ export class UserResolver {
     try {
       const user = await User.findOne({
         where: { email: input.email.normalize().toLowerCase() },
+        relations: ["authorization"],
       });
 
       if (!user)
@@ -113,13 +95,15 @@ export class UserResolver {
 
       const { username, email, password } = input;
       const hashedPassword = await hash(password, 12);
-      const user = User.create({
+      const user = await User.create({
         username,
         email: email.normalize().toLowerCase(),
         password: hashedPassword,
         role: Role.USER,
-      });
-      await user.save();
+        authorization: undefined,
+      }).save();
+
+      console.log("-------reached", user);
 
       //linking the current cart in session with the new user
       await Cart.update(
@@ -140,7 +124,7 @@ export class UserResolver {
 
   //TODO add authorization same user or admin
   @Mutation(() => UserResponse)
-  async updateUser(
+  async updateMe(
     @Arg("properties", () => UpdateUserInput) { uuid, fields }: UpdateUserInput
   ): Promise<UserResponse> {
     try {
@@ -164,23 +148,6 @@ export class UserResolver {
       const user = await User.findOne({ where: { uuid } });
       return {
         payload: user,
-      };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
-  }
-
-  @Mutation(() => SuccessResponse)
-  @UseMiddleware(isAdmin)
-  async deleteUser(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
-    try {
-      const result = await User.delete({ uuid });
-
-      if (result.affected! < 1)
-        throw new Err(ErrCode.NOT_FOUND, "No User matches this UUID");
-
-      return {
-        ok: true,
       };
     } catch (err) {
       return Err.ResponseBuilder(err);

@@ -129,7 +129,6 @@ __decorate([
 ], ItemResolver.prototype, "item", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ItemResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.newItemInput]),

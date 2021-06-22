@@ -37,7 +37,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   let user: User | undefined;
   const cookie: MyCookie | undefined = req.cookies.sid;
 
-  console.log(cookie);
+  //console.log(cookie);
   if (!cookie) {
     session = await createSession(req, res);
     return next();
@@ -60,9 +60,12 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   // available session with access token
   // A. decode token
   const payload = decodeAccessToken(session.access_token);
-  console.log(payload);
+  //console.log(payload);
   if (payload) {
-    user = await User.findOne({ where: { uuid: payload.userUuid } });
+    user = await User.findOne({
+      where: { uuid: payload.userUuid },
+      relations: ["authorization"],
+    });
     if (user) {
       //update session accessToken ,  setCookies , load session and user , next
       await updateSession(session, user, req, res);
@@ -74,12 +77,13 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
     //expired access Token --> validate refresh Token match
     user = await User.findOne({
       where: { refresh_token: session.refresh_token },
+      relations: ["authorization"],
     });
     if (!user) {
-      console.log("invalid match with user_token");
+      //console.log("invalid match with user_token");
       await resetSession(session, req, res);
     } else {
-      console.log("refresh mateched");
+      //console.log("refresh mateched");
       await updateSession(session, user, req, res);
     }
   }

@@ -38,7 +38,6 @@ export class ItemResolver {
   }
 
   @Mutation(() => ItemResponse)
-  @UseMiddleware(isStaff)
   async createItem(@Arg("input") input: newItemInput): Promise<ItemResponse> {
     try {
       const formErrors = await myValidator(input, createItemRules);

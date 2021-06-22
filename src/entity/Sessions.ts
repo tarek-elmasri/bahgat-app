@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+@Entity("sessions")
 export class Session extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;

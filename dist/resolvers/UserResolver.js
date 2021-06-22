@@ -54,25 +54,8 @@ let UserResolver = class UserResolver {
                 },
                 relations: ["cartItems"],
             });
+            console.log(req.user);
             return { data: req.user, cart };
-        });
-    }
-    user(uuid) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const user = yield entity_1.User.findOne({ where: { uuid } });
-                if (!user)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, " No User Matched this ID.");
-                return { payload: user };
-            }
-            catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
-            }
-        });
-    }
-    users() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield entity_1.User.find();
         });
     }
     login(input, { req, res }) {
@@ -80,6 +63,7 @@ let UserResolver = class UserResolver {
             try {
                 const user = yield entity_1.User.findOne({
                     where: { email: input.email.normalize().toLowerCase() },
+                    relations: ["authorization"],
                 });
                 if (!user)
                     throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or password.");
@@ -105,13 +89,14 @@ let UserResolver = class UserResolver {
                     return { errors: formErrors };
                 const { username, email, password } = input;
                 const hashedPassword = yield bcryptjs_1.hash(password, 12);
-                const user = entity_1.User.create({
+                const user = yield entity_1.User.create({
                     username,
                     email: email.normalize().toLowerCase(),
                     password: hashedPassword,
                     role: types_1.Role.USER,
-                });
-                yield user.save();
+                    authorization: undefined,
+                }).save();
+                console.log("-------reached", user);
                 yield entity_1.Cart.update({ uuid: req.session.cartUuid }, { userUuid: user.uuid });
                 req.session.refresh_token = user.refresh_token;
                 yield utils_1.updateSession(req.session, user, req, res);
@@ -124,7 +109,7 @@ let UserResolver = class UserResolver {
             }
         });
     }
-    updateUser({ uuid, fields }) {
+    updateMe({ uuid, fields }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const existedUser = yield entity_1.User.findOne({ where: { uuid } });
@@ -149,21 +134,6 @@ let UserResolver = class UserResolver {
             }
         });
     }
-    deleteUser(uuid) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const result = yield entity_1.User.delete({ uuid });
-                if (result.affected < 1)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No User matches this UUID");
-                return {
-                    ok: true,
-                };
-            }
-            catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
-            }
-        });
-    }
 };
 __decorate([
     type_graphql_1.Query(() => MeResponse, { nullable: true }),
@@ -173,23 +143,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "me", null);
 __decorate([
-    type_graphql_1.Query(() => types_1.UserResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
-    __param(0, type_graphql_1.Arg("uuid")),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], UserResolver.prototype, "user", null);
-__decorate([
-    type_graphql_1.Query(() => [entity_1.User]),
-    type_graphql_1.UseMiddleware(authorization_1.isAdmin),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], UserResolver.prototype, "users", null);
-__decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isGuest),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -211,15 +165,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateUserInput]),
     __metadata("design:returntype", Promise)
-], UserResolver.prototype, "updateUser", null);
-__decorate([
-    type_graphql_1.Mutation(() => types_1.SuccessResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isAdmin),
-    __param(0, type_graphql_1.Arg("uuid")),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], UserResolver.prototype, "deleteUser", null);
+], UserResolver.prototype, "updateMe", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);

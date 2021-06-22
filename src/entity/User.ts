@@ -7,11 +7,14 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Cart } from "./Cart";
 import { createRefreshToken } from "../utils";
+import { Authorization } from "./Authorization";
 
 @ObjectType()
 @Entity("users")
@@ -48,6 +51,19 @@ export class User extends BaseEntity {
   @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  authorizationId: string;
+
+  @Field(() => Authorization, { nullable: true })
+  @OneToOne(() => Authorization, (auth) => auth.user, {
+    onDelete: "CASCADE",
+    cascade: true,
+    nullable: true,
+  })
+  @JoinColumn()
+  authorization?: Authorization;
 
   @Field(() => Cart)
   async cart(@Ctx() { req }: MyContext) {

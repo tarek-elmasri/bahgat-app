@@ -16,7 +16,6 @@ const sessionBuilder = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     let session;
     let user;
     const cookie = req.cookies.sid;
-    console.log(cookie);
     if (!cookie) {
         session = yield createSession(req, res);
         return next();
@@ -31,9 +30,11 @@ const sessionBuilder = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         return next();
     }
     const payload = decodeAccessToken(session.access_token);
-    console.log(payload);
     if (payload) {
-        user = yield entity_1.User.findOne({ where: { uuid: payload.userUuid } });
+        user = yield entity_1.User.findOne({
+            where: { uuid: payload.userUuid },
+            relations: ["authorization"],
+        });
         if (user) {
             yield exports.updateSession(session, user, req, res);
         }
@@ -44,13 +45,12 @@ const sessionBuilder = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     else {
         user = yield entity_1.User.findOne({
             where: { refresh_token: session.refresh_token },
+            relations: ["authorization"],
         });
         if (!user) {
-            console.log("invalid match with user_token");
             yield exports.resetSession(session, req, res);
         }
         else {
-            console.log("refresh mateched");
             yield exports.updateSession(session, user, req, res);
         }
     }
