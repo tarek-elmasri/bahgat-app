@@ -26,9 +26,6 @@ class UpdateUserProperties {
 
 @InputType()
 export class UpdateUserInput {
-  @Field(() => String)
-  uuid: string;
-
   @Field(() => UpdateUserProperties)
   fields: UpdateUserProperties;
 }

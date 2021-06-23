@@ -6,7 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { CartsItems } from "./CartsItems";
+import { CartsItems } from "./";
 
 @Entity("carts")
 @ObjectType()

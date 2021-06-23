@@ -16,4 +16,5 @@ __exportStar(require("./Category"), exports);
 __exportStar(require("./Item"), exports);
 __exportStar(require("./Sessions"), exports);
 __exportStar(require("./User"), exports);
+__exportStar(require("./Authorization"), exports);
 //# sourceMappingURL=index.js.map

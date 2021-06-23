@@ -49,10 +49,6 @@ UpdateUserProperties = __decorate([
 let UpdateUserInput = class UpdateUserInput {
 };
 __decorate([
-    type_graphql_1.Field(() => String),
-    __metadata("design:type", String)
-], UpdateUserInput.prototype, "uuid", void 0);
-__decorate([
     type_graphql_1.Field(() => UpdateUserProperties),
     __metadata("design:type", UpdateUserProperties)
 ], UpdateUserInput.prototype, "fields", void 0);

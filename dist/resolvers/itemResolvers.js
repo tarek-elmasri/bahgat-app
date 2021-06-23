@@ -24,11 +24,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const entity_1 = require("../entity");
-const Err_1 = require("../errors/Err");
-const codes_1 = require("../errors/codes");
+const errors_1 = require("../errors");
 const typeorm_1 = require("typeorm");
 const types_1 = require("../types");
-const authorization_1 = require("../middlewares/authorization");
+const middlewares_1 = require("../middlewares");
 const myValidator_1 = require("../utils/validators/myValidator");
 let ItemResolver = class ItemResolver {
     items() {
@@ -44,13 +43,13 @@ let ItemResolver = class ItemResolver {
                     relations: ["category"],
                 });
                 if (!item)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Item matches this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item matches this ID.");
                 return {
                     payload: item,
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -64,13 +63,13 @@ let ItemResolver = class ItemResolver {
                     where: { uuid: input.categoryUuid },
                 });
                 if (!category)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Category matches this Category ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Category matches this Category ID.");
                 return {
                     payload: yield entity_1.Item.create(input).save(),
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -79,7 +78,7 @@ let ItemResolver = class ItemResolver {
             try {
                 const item = yield entity_1.Item.findOne({ where: { uuid } });
                 if (!item)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Item Matches this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item Matches this ID.");
                 const formInput = { name: properties.name || item.name };
                 const formErrors = yield myValidator_1.myValidator(formInput, myValidator_1.createItemRules);
                 if (formErrors)
@@ -94,7 +93,7 @@ let ItemResolver = class ItemResolver {
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -103,13 +102,13 @@ let ItemResolver = class ItemResolver {
             try {
                 const deleted = yield entity_1.Item.delete({ uuid });
                 if (deleted.affected < 1)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Result matches this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Result matches this ID.");
                 return {
                     ok: true,
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -129,6 +128,7 @@ __decorate([
 ], ItemResolver.prototype, "item", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["addItem"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.newItemInput]),
@@ -136,7 +136,7 @@ __decorate([
 ], ItemResolver.prototype, "createItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ItemResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateItem"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.updateItemInput]),
@@ -144,7 +144,7 @@ __decorate([
 ], ItemResolver.prototype, "updateItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["deleteItem"])),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

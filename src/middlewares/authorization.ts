@@ -1,37 +1,62 @@
 import { MyContext, Role } from "../types";
-import { MiddlewareFn, NextFn } from "type-graphql";
-import { Err } from "../errors/Err";
-import { ErrCode } from "../errors/codes";
+import { MiddlewareFn } from "type-graphql";
+import { ErrCode, Err } from "../errors";
 
-type AuthorizationFn = (
-  context: MyContext,
-  next: NextFn,
-  key: Role
-) => Promise<any>;
+// export enum AuthorizationType {
+//   viewAllUsers = "viewAllUsers",
+//   updateUser = "updateUser",
+//   deleteUser = "deleteUser",
+//   addItem = "addItem",
+//   updateItem = "updateItem",
+//   deleteItem = "deleteItem",
+//   addCategory = "addCategory",
+//   updateCategory = "updateCategory",
+//   deleteCategory = "deleteCategory",
+// }
 
-const isAuthorized: AuthorizationFn = async ({ req }, next, key) => {
-  const role = req.user?.role || Role.GUEST;
+type AuthorizationType =
+  | "viewAllUsers"
+  | "updateUser"
+  | "deleteUser"
+  | "addItem"
+  | "updateItem"
+  | "deleteItem"
+  | "addCategory"
+  | "updateCategory"
+  | "deleteCategory";
 
-  let pass = false;
+type AuthorizationFn = (keys: AuthorizationType[]) => MiddlewareFn<MyContext>;
 
-  if (key === Role.STAFF) {
-    pass = role === Role.STAFF || role === Role.ADMIN;
-  } else {
-    pass = role === key;
-  }
+export const isAuthorized: AuthorizationFn =
+  (keys): MiddlewareFn<MyContext> =>
+  async ({ context }, next) => {
+    const { user } = context.req;
+    const role = user?.role || Role.GUEST;
 
-  if (!pass) {
-    throw new Err(ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
-  }
+    if (role === Role.ADMIN) return next();
+
+    if (role === Role.GUEST)
+      throw new Err(ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
+
+    if (!user?.authorization)
+      throw new Err(
+        ErrCode.NOT_AUTHORIZED,
+        "No Authorization found for this user"
+      );
+
+    let reqAuth = Object.assign({}, user.authorization);
+
+    keys.map((key) => {
+      if (!reqAuth[key])
+        throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized Request.");
+    });
+
+    return next();
+  };
+
+export const isGuest: MiddlewareFn<MyContext> = ({ context }, next) => {
+  if (context.req.user)
+    throw new Err(ErrCode.INVALID_ACTION, "User already logged in.");
 
   return next();
 };
-
-export const isStaff: MiddlewareFn<MyContext> = ({ context }, next) =>
-  isAuthorized(context, next, Role.STAFF);
-
-export const isAdmin: MiddlewareFn<MyContext> = ({ context }, next) =>
-  isAuthorized(context, next, Role.ADMIN);
-
-export const isGuest: MiddlewareFn<MyContext> = ({ context }, next) =>
-  isAuthorized(context, next, Role.GUEST);

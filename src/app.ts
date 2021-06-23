@@ -3,7 +3,8 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { createConnection } from "typeorm";
-import { sessionBuilder, apolloServerConfig, dbConnection } from "./utils";
+import { apolloServerConfig, dbConnection } from "./config";
+import { sessionBuilder } from "./middlewares";
 
 const app = express();
 

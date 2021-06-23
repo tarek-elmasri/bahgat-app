@@ -7,8 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Cart } from "./Cart";
-import { Item } from "./Item";
+import { Cart, Item } from "./";
 
 @Entity("cartsitems")
 @ObjectType()

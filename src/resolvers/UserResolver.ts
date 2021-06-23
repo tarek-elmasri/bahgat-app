@@ -18,11 +18,10 @@ import {
 } from "../types";
 import { User, Cart } from "../entity";
 import { hash, compare } from "bcryptjs";
-import { Err } from "../errors/Err";
-import { ErrCode } from "../errors/codes";
+import { ErrCode, Err } from "../errors";
 import { getConnection } from "typeorm";
-import { isGuest } from "../middlewares/authorization";
-import { syncCart, updateSession } from "../utils";
+import { updateSession, isGuest } from "../middlewares";
+import { syncCart } from "../utils";
 import { createUserRules, myValidator } from "../utils/validators/myValidator";
 
 @ObjectType()
@@ -45,13 +44,11 @@ export class UserResolver {
       relations: ["cartItems"],
     });
 
-    console.log(req.user);
-
     return { data: req.user, cart };
   }
 
   @Mutation(() => UserResponse)
-  // @UseMiddleware(isGuest)
+  @UseMiddleware(isGuest)
   async login(
     @Arg("input") input: LoginInput,
     @Ctx() { req, res }: MyContext
@@ -103,8 +100,6 @@ export class UserResolver {
         authorization: undefined,
       }).save();
 
-      console.log("-------reached", user);
-
       //linking the current cart in session with the new user
       await Cart.update(
         { uuid: req.session.cartUuid },
@@ -125,27 +120,31 @@ export class UserResolver {
   //TODO add authorization same user or admin
   @Mutation(() => UserResponse)
   async updateMe(
-    @Arg("properties", () => UpdateUserInput) { uuid, fields }: UpdateUserInput
+    @Arg("properties", () => UpdateUserInput) { fields }: UpdateUserInput,
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     try {
-      const existedUser = await User.findOne({ where: { uuid } });
-      if (!existedUser)
-        throw new Err(ErrCode.NOT_FOUND, "Invalid UUID for User.");
+      let { user } = req;
+      if (!user)
+        throw new Err(ErrCode.NOT_FOUND, "No user found for current request.");
 
       //matching the partial form for validation fn
       const userForm = {
-        username: fields.username || existedUser.username,
-        email: fields.email.normalize().toLowerCase() || existedUser.email,
-        password: fields.password || existedUser.password,
+        username: fields.username || user.username,
+        email: fields.email.normalize().toLowerCase() || user.email,
+        password: fields.password || user.password,
       };
 
       //validating the form
       const formErrors = await myValidator(userForm, createUserRules);
       if (formErrors) return { errors: formErrors };
 
-      await getConnection().getRepository(User).update({ uuid }, fields);
+      // TODO: hashing password if updated
+      await getConnection()
+        .getRepository(User)
+        .update({ uuid: user.uuid }, fields);
 
-      const user = await User.findOne({ where: { uuid } });
+      user = await User.findOne({ where: { uuid: user.uuid } });
       return {
         payload: user,
       };

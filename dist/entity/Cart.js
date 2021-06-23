@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cart = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const CartsItems_1 = require("./CartsItems");
+const _1 = require("./");
 let Cart = class Cart extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -24,8 +24,8 @@ __decorate([
     __metadata("design:type", String)
 ], Cart.prototype, "userUuid", void 0);
 __decorate([
-    type_graphql_1.Field(() => [CartsItems_1.CartsItems]),
-    typeorm_1.OneToMany(() => CartsItems_1.CartsItems, (cartItem) => cartItem.cart),
+    type_graphql_1.Field(() => [_1.CartsItems]),
+    typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.cart),
     __metadata("design:type", Promise)
 ], Cart.prototype, "cartItems", void 0);
 Cart = __decorate([

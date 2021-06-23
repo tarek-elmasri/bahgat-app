@@ -12,8 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartsItems = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const Cart_1 = require("./Cart");
-const Item_1 = require("./Item");
+const _1 = require("./");
 let CartsItems = class CartsItems extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -34,13 +33,13 @@ __decorate([
     __metadata("design:type", Number)
 ], CartsItems.prototype, "quantity", void 0);
 __decorate([
-    type_graphql_1.Field(() => Item_1.Item),
-    typeorm_1.ManyToOne(() => Item_1.Item, (item) => item.cartConnection, { primary: true }),
+    type_graphql_1.Field(() => _1.Item),
+    typeorm_1.ManyToOne(() => _1.Item, (item) => item.cartConnection, { primary: true }),
     typeorm_1.JoinTable({ name: "itemUuid" }),
     __metadata("design:type", Promise)
 ], CartsItems.prototype, "item", void 0);
 __decorate([
-    typeorm_1.ManyToOne(() => Cart_1.Cart, (cart) => cart.cartItems, { primary: true }),
+    typeorm_1.ManyToOne(() => _1.Cart, (cart) => cart.cartItems, { primary: true }),
     typeorm_1.JoinTable({ name: "cartUuid" }),
     __metadata("design:type", Promise)
 ], CartsItems.prototype, "cart", void 0);

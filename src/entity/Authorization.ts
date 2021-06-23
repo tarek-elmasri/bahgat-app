@@ -6,7 +6,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { User } from "./User";
+import { User } from "./";
 
 @ObjectType()
 @Entity("authorizations")

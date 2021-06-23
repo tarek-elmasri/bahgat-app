@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.syncCart = void 0;
 const typeorm_1 = require("typeorm");
 const entity_1 = require("../entity");
-const sessionBuilder_1 = require("./sessionBuilder");
+const sessionBuilder_1 = require("../middlewares/sessionBuilder");
 const syncCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { session, user } = req;
     const userCart = yield entity_1.Cart.findOne({

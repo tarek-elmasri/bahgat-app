@@ -12,9 +12,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Cart } from "./Cart";
-import { createRefreshToken } from "../utils";
-import { Authorization } from "./Authorization";
+import { Cart, Authorization } from "./";
+import { createRefreshToken } from "../middlewares";
 
 @ObjectType()
 @Entity("users")

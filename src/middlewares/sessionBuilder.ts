@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Cart, Session, User } from "../entity";
 import { sign, verify } from "jsonwebtoken";
+
 type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
 // export interface MyRequest extends Request {
@@ -8,7 +9,7 @@ type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 //   user?: User;
 // }
 interface MyCookie {
-  id: string;
+  id: string; //session id in database
   cartUuid: string;
   access_token?: string;
   refresh_token?: string;
@@ -23,7 +24,7 @@ interface MyCookie {
                         --> valid decoding -->  find user with userUuid in payload of decoded token
                                                     --> available ? update session access token --> load session and req.user
                                                     --> invalid ? reset current session with no accessToken,refreshToken,Role=guest --> set cookies
-                        --> not valid decoding 
+                        --> not valid decoding (expired access token)
                             --> find user with session refresh token
                                 --> available user? update session access token --> load session and user
                                 --> not available? reset current session with no accessToken,refreshToken,role=guest --> setCookies
@@ -37,7 +38,6 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   let user: User | undefined;
   const cookie: MyCookie | undefined = req.cookies.sid;
 
-  //console.log(cookie);
   if (!cookie) {
     session = await createSession(req, res);
     return next();
@@ -45,7 +45,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   //find session by cookie.id
   session = await Session.findOne({ where: { id: cookie.id } });
 
-  // no session in db --> create new session
+  // no session in db (** in case deleting all sessions to force logging out)--> create new session
   if (!session) {
     session = await createSession(req, res);
     return next();
@@ -58,10 +58,10 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   }
 
   // available session with access token
-  // A. decode token
+  // ---> decode token
   const payload = decodeAccessToken(session.access_token);
-  //console.log(payload);
   if (payload) {
+    // successfull accessToken
     user = await User.findOne({
       where: { uuid: payload.userUuid },
       relations: ["authorization"],
@@ -70,7 +70,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
       //update session accessToken ,  setCookies , load session and user , next
       await updateSession(session, user, req, res);
     } else {
-      // reset session, set cookies , next
+      // reset session, set cookies , next (currupted data)
       await resetSession(session, req, res);
     }
   } else {
@@ -80,10 +80,10 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
       relations: ["authorization"],
     });
     if (!user) {
-      //console.log("invalid match with user_token");
+      // user changed password --> no refresh token match
       await resetSession(session, req, res);
     } else {
-      //console.log("refresh mateched");
+      //session refreshToken matched user refresh token
       await updateSession(session, user, req, res);
     }
   }

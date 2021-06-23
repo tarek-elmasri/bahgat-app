@@ -26,10 +26,9 @@ const type_graphql_1 = require("type-graphql");
 const types_1 = require("../types");
 const entity_1 = require("../entity");
 const bcryptjs_1 = require("bcryptjs");
-const Err_1 = require("../errors/Err");
-const codes_1 = require("../errors/codes");
+const errors_1 = require("../errors");
 const typeorm_1 = require("typeorm");
-const authorization_1 = require("../middlewares/authorization");
+const middlewares_1 = require("../middlewares");
 const utils_1 = require("../utils");
 const myValidator_1 = require("../utils/validators/myValidator");
 let MeResponse = class MeResponse {
@@ -54,7 +53,6 @@ let UserResolver = class UserResolver {
                 },
                 relations: ["cartItems"],
             });
-            console.log(req.user);
             return { data: req.user, cart };
         });
     }
@@ -66,10 +64,10 @@ let UserResolver = class UserResolver {
                     relations: ["authorization"],
                 });
                 if (!user)
-                    throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or password.");
+                    throw new errors_1.Err(errors_1.ErrCode.INVALID_LOGIN, "Invalid Email or password.");
                 const verified = bcryptjs_1.compare(input.password, user.password);
                 if (!verified)
-                    throw new Err_1.Err(codes_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
+                    throw new errors_1.Err(errors_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
                 req.user = user;
                 yield utils_1.syncCart(req, res);
                 return {
@@ -77,7 +75,7 @@ let UserResolver = class UserResolver {
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -96,41 +94,42 @@ let UserResolver = class UserResolver {
                     role: types_1.Role.USER,
                     authorization: undefined,
                 }).save();
-                console.log("-------reached", user);
                 yield entity_1.Cart.update({ uuid: req.session.cartUuid }, { userUuid: user.uuid });
                 req.session.refresh_token = user.refresh_token;
-                yield utils_1.updateSession(req.session, user, req, res);
+                yield middlewares_1.updateSession(req.session, user, req, res);
                 return {
                     payload: user,
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
-    updateMe({ uuid, fields }) {
+    updateMe({ fields }, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const existedUser = yield entity_1.User.findOne({ where: { uuid } });
-                if (!existedUser)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "Invalid UUID for User.");
+                let { user } = req;
+                if (!user)
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No user found for current request.");
                 const userForm = {
-                    username: fields.username || existedUser.username,
-                    email: fields.email.normalize().toLowerCase() || existedUser.email,
-                    password: fields.password || existedUser.password,
+                    username: fields.username || user.username,
+                    email: fields.email.normalize().toLowerCase() || user.email,
+                    password: fields.password || user.password,
                 };
                 const formErrors = yield myValidator_1.myValidator(userForm, myValidator_1.createUserRules);
                 if (formErrors)
                     return { errors: formErrors };
-                yield typeorm_1.getConnection().getRepository(entity_1.User).update({ uuid }, fields);
-                const user = yield entity_1.User.findOne({ where: { uuid } });
+                yield typeorm_1.getConnection()
+                    .getRepository(entity_1.User)
+                    .update({ uuid: user.uuid }, fields);
+                user = yield entity_1.User.findOne({ where: { uuid: user.uuid } });
                 return {
                     payload: user,
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -144,6 +143,7 @@ __decorate([
 ], UserResolver.prototype, "me", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
+    type_graphql_1.UseMiddleware(middlewares_1.isGuest),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -152,7 +152,7 @@ __decorate([
 ], UserResolver.prototype, "login", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isGuest),
+    type_graphql_1.UseMiddleware(middlewares_1.isGuest),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -162,8 +162,9 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => types_1.UserResponse),
     __param(0, type_graphql_1.Arg("properties", () => types_1.UpdateUserInput)),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [types_1.UpdateUserInput]),
+    __metadata("design:paramtypes", [types_1.UpdateUserInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "updateMe", null);
 UserResolver = __decorate([

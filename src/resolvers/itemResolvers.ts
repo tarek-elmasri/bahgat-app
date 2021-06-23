@@ -1,7 +1,6 @@
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { Item, Category } from "../entity";
-import { Err } from "../errors/Err";
-import { ErrCode } from "../errors/codes";
+import { ErrCode, Err } from "../errors";
 import { getConnection } from "typeorm";
 import {
   ItemResponse,
@@ -9,7 +8,7 @@ import {
   updateItemInput,
   SuccessResponse,
 } from "../types";
-import { isStaff } from "../middlewares/authorization";
+import { isAuthorized } from "../middlewares";
 import { createItemRules, myValidator } from "../utils/validators/myValidator";
 
 @Resolver()
@@ -38,6 +37,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => ItemResponse)
+  @UseMiddleware(isAuthorized(["addItem"]))
   async createItem(@Arg("input") input: newItemInput): Promise<ItemResponse> {
     try {
       const formErrors = await myValidator(input, createItemRules);
@@ -62,7 +62,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => ItemResponse)
-  @UseMiddleware(isStaff)
+  @UseMiddleware(isAuthorized(["updateItem"]))
   async updateItem(
     @Arg("input") { uuid, properties }: updateItemInput
   ): Promise<ItemResponse> {
@@ -90,7 +90,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => SuccessResponse)
-  @UseMiddleware(isStaff)
+  @UseMiddleware(isAuthorized(["deleteItem"]))
   async deleteItem(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
     try {
       const deleted = await Item.delete({ uuid });

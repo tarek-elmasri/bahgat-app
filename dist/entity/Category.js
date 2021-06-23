@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Category = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const Item_1 = require("./Item");
+const _1 = require("./");
 let Category = class Category extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -22,12 +22,12 @@ __decorate([
 ], Category.prototype, "uuid", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column('varchar', { nullable: false }),
+    typeorm_1.Column("varchar", { nullable: false }),
     __metadata("design:type", String)
 ], Category.prototype, "name", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column('text'),
+    typeorm_1.Column("text"),
     __metadata("design:type", String)
 ], Category.prototype, "description", void 0);
 __decorate([
@@ -41,12 +41,12 @@ __decorate([
     __metadata("design:type", Date)
 ], Category.prototype, "updatedAt", void 0);
 __decorate([
-    type_graphql_1.Field(() => [Item_1.Item], { nullable: true }),
-    typeorm_1.OneToMany(() => Item_1.Item, item => item.category),
+    type_graphql_1.Field(() => [_1.Item], { nullable: true }),
+    typeorm_1.OneToMany(() => _1.Item, (item) => item.category),
     __metadata("design:type", Array)
 ], Category.prototype, "items", void 0);
 Category = __decorate([
-    typeorm_1.Entity('categories'),
+    typeorm_1.Entity("categories"),
     type_graphql_1.ObjectType()
 ], Category);
 exports.Category = Category;

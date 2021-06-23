@@ -1,7 +1,5 @@
 import { User } from "../../entity";
-import { ErrCode } from "../../errors/codes";
-import { Err } from "../../errors/Err";
-import { isAdmin, isStaff } from "../../middlewares/authorization";
+import { ErrCode, Err } from "../../errors";
 import {
   MyContext,
   PanelUpdateUserInput,
@@ -21,13 +19,13 @@ import {
   myValidator,
 } from "../../utils/validators/myValidator";
 import { getConnection } from "typeorm";
-import { Authorization } from "../../entity/Authorization";
-import { isAuthorized } from "../../middlewares/newAuthorization";
+import { Authorization } from "../../entity";
+import { isAuthorized } from "../../middlewares";
 
 @Resolver()
 export class panel_userResolver {
   @Query(() => UserResponse)
-  @UseMiddleware(isStaff)
+  @UseMiddleware(isAuthorized(["viewAllUsers"]))
   async panel_user(@Arg("uuid") uuid: string): Promise<UserResponse> {
     try {
       const user = await User.findOne({
@@ -44,7 +42,7 @@ export class panel_userResolver {
   }
 
   @Query(() => [User])
-  @UseMiddleware(isAdmin)
+  @UseMiddleware(isAuthorized(["viewAllUsers"]))
   async panel_users(): Promise<User[]> {
     return await User.find();
   }
@@ -107,7 +105,7 @@ export class panel_userResolver {
   }
 
   @Mutation(() => SuccessResponse)
-  @UseMiddleware(isAdmin)
+  @UseMiddleware(isAuthorized(["deleteUser"]))
   async panel_deleteUser(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
     try {
       const result = await User.delete({ uuid });

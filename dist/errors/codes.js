@@ -9,5 +9,6 @@ var ErrCode;
     ErrCode["NOT_LOGGED_IN"] = "NOT_LOGGED_IN";
     ErrCode["NOT_AUTHORIZED"] = " NOT_AUTHORIZED";
     ErrCode["INVAID_INPUT_PARAMETER"] = "INVALID_INPUT_PARAMETER";
+    ErrCode["INVALID_ACTION"] = "INVALID_ACTION";
 })(ErrCode = exports.ErrCode || (exports.ErrCode = {}));
 //# sourceMappingURL=codes.js.map

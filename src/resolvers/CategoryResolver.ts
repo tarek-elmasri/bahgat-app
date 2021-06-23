@@ -7,10 +7,9 @@ import {
   SuccessResponse,
 } from "../types";
 import { getConnection } from "typeorm";
-import { Err } from "../errors/Err";
-import { ErrCode } from "../errors/codes";
+import { ErrCode, Err } from "../errors";
 import { Category } from "../entity";
-import { isStaff } from "../middlewares/authorization";
+import { isAuthorized } from "../middlewares";
 import {
   createCategoryRules,
   myValidator,
@@ -40,6 +39,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CategoryResponse)
+  @UseMiddleware(isAuthorized(["addCategory"]))
   async createCategory(
     @Arg("input") input: NewCategoryInput
   ): Promise<CategoryResponse> {
@@ -56,7 +56,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CategoryResponse)
-  @UseMiddleware(isStaff)
+  @UseMiddleware(isAuthorized(["updateCategory"]))
   async updateCategory(
     @Arg("input") { uuid, fields }: UpdateCategoryInput
   ): Promise<CategoryResponse> {
@@ -81,7 +81,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => SuccessResponse)
-  @UseMiddleware(isStaff)
+  @UseMiddleware(isAuthorized(["deleteCategory"]))
   async deleteCategory(
     @Arg("input") { uuid, saveDelete }: DeleteCategoryInput
   ): Promise<SuccessResponse> {

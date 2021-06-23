@@ -10,9 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Cart } from "./Cart";
-import { CartsItems } from "./CartsItems";
-import { Category } from "./Category";
+import { Cart, CartsItems, Category } from "./";
 
 @ObjectType()
 @Entity("items")

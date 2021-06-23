@@ -24,13 +24,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const Cart_1 = require("./Cart");
-const utils_1 = require("../utils");
-const Authorization_1 = require("./Authorization");
+const _1 = require("./");
+const middlewares_1 = require("../middlewares");
 let User = class User extends typeorm_1.BaseEntity {
     cart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Cart_1.Cart.findOne({
+            return yield _1.Cart.findOne({
                 where: {
                     uuid: req.session.cartUuid,
                 },
@@ -39,7 +38,7 @@ let User = class User extends typeorm_1.BaseEntity {
         });
     }
     setRefreshToken() {
-        this.refresh_token = utils_1.createRefreshToken({ userUuid: this.uuid });
+        this.refresh_token = middlewares_1.createRefreshToken({ userUuid: this.uuid });
     }
 };
 __decorate([
@@ -89,17 +88,17 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "authorizationId", void 0);
 __decorate([
-    type_graphql_1.Field(() => Authorization_1.Authorization, { nullable: true }),
-    typeorm_1.OneToOne(() => Authorization_1.Authorization, (auth) => auth.user, {
+    type_graphql_1.Field(() => _1.Authorization, { nullable: true }),
+    typeorm_1.OneToOne(() => _1.Authorization, (auth) => auth.user, {
         onDelete: "CASCADE",
         cascade: true,
         nullable: true,
     }),
     typeorm_1.JoinColumn(),
-    __metadata("design:type", Authorization_1.Authorization)
+    __metadata("design:type", _1.Authorization)
 ], User.prototype, "authorization", void 0);
 __decorate([
-    type_graphql_1.Field(() => Cart_1.Cart),
+    type_graphql_1.Field(() => _1.Cart),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

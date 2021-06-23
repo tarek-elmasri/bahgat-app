@@ -1,6 +1,6 @@
 import { getConnection } from "typeorm";
 import { Cart, CartsItems } from "../entity";
-import { updateSession } from "./sessionBuilder";
+import { updateSession } from "../middlewares/sessionBuilder";
 import { Request, Response } from "express";
 
 type SyncCartFn = (req: Request, res: Response) => Promise<void>;

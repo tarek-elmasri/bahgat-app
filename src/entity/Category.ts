@@ -1,34 +1,39 @@
 import { Field, ObjectType } from "type-graphql";
-import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Item } from "./Item";
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { Item } from "./";
 
-
-@Entity('categories')
+@Entity("categories")
 @ObjectType()
 export class Category extends BaseEntity {
-
-  @Field(()=> String)
+  @Field(() => String)
   @PrimaryGeneratedColumn("uuid")
-  uuid: string
+  uuid: string;
 
   @Field()
-  @Column('varchar',{nullable: false})
-  name: string 
+  @Column("varchar", { nullable: false })
+  name: string;
 
   @Field()
-  @Column('text')
-  description: string 
+  @Column("text")
+  description: string;
 
-  @Field(()=> Date)
+  @Field(() => Date)
   @CreateDateColumn()
-  createdAt: Date
+  createdAt: Date;
 
-  @Field(()=> Date, {nullable: true})
-  @UpdateDateColumn({nullable: true})
-  updatedAt: Date
+  @Field(() => Date, { nullable: true })
+  @UpdateDateColumn({ nullable: true })
+  updatedAt: Date;
 
-  @Field(()=> [Item] , {nullable: true})
-  @OneToMany(()=> Item , item => item.category  )
-  items: Item[] 
-  
+  @Field(() => [Item], { nullable: true })
+  @OneToMany(() => Item, (item) => item.category)
+  items: Item[];
 }

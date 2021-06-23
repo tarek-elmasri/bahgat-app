@@ -9,29 +9,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isGuest = exports.isAdmin = exports.isStaff = void 0;
+exports.isGuest = exports.isAuthorized = void 0;
 const types_1 = require("../types");
-const Err_1 = require("../errors/Err");
-const codes_1 = require("../errors/codes");
-const isAuthorized = ({ req }, next, key) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const role = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) || types_1.Role.GUEST;
-    let pass = false;
-    if (key === types_1.Role.STAFF) {
-        pass = role === types_1.Role.STAFF || role === types_1.Role.ADMIN;
-    }
-    else {
-        pass = role === key;
-    }
-    if (!pass) {
-        throw new Err_1.Err(codes_1.ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
-    }
+const errors_1 = require("../errors");
+const isAuthorized = (keys) => ({ context }, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { user } = context.req;
+    const role = (user === null || user === void 0 ? void 0 : user.role) || types_1.Role.GUEST;
+    if (role === types_1.Role.ADMIN)
+        return next();
+    if (role === types_1.Role.GUEST)
+        throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
+    if (!(user === null || user === void 0 ? void 0 : user.authorization))
+        throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "No Authorization found for this user");
+    let reqAuth = Object.assign({}, user.authorization);
+    keys.map((key) => {
+        if (!reqAuth[key])
+            throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "UnAuthorized Request.");
+    });
     return next();
 });
-const isStaff = ({ context }, next) => isAuthorized(context, next, types_1.Role.STAFF);
-exports.isStaff = isStaff;
-const isAdmin = ({ context }, next) => isAuthorized(context, next, types_1.Role.ADMIN);
-exports.isAdmin = isAdmin;
-const isGuest = ({ context }, next) => isAuthorized(context, next, types_1.Role.GUEST);
+exports.isAuthorized = isAuthorized;
+const isGuest = ({ context }, next) => {
+    if (context.req.user)
+        throw new errors_1.Err(errors_1.ErrCode.INVALID_ACTION, "User already logged in.");
+    return next();
+};
 exports.isGuest = isGuest;
 //# sourceMappingURL=authorization.js.map

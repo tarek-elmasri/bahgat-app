@@ -25,10 +25,9 @@ exports.CategoryResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const types_1 = require("../types");
 const typeorm_1 = require("typeorm");
-const Err_1 = require("../errors/Err");
-const codes_1 = require("../errors/codes");
+const errors_1 = require("../errors");
 const entity_1 = require("../entity");
-const authorization_1 = require("../middlewares/authorization");
+const middlewares_1 = require("../middlewares");
 const myValidator_1 = require("../utils/validators/myValidator");
 let CategoryResolver = class CategoryResolver {
     categories() {
@@ -44,11 +43,11 @@ let CategoryResolver = class CategoryResolver {
                     relations: ["items"],
                 });
                 if (!category)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Category matches this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Category matches this ID.");
                 return { payload: category };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -63,7 +62,7 @@ let CategoryResolver = class CategoryResolver {
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -75,7 +74,7 @@ let CategoryResolver = class CategoryResolver {
                     return { errors: formErrors };
                 const exists = yield entity_1.Category.findOne({ where: { uuid } });
                 if (!exists)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matches this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No category matches this ID.");
                 yield typeorm_1.getConnection().getRepository(entity_1.Category).update({ uuid }, fields);
                 const category = yield entity_1.Category.findOne({ where: { uuid } });
                 return {
@@ -83,7 +82,7 @@ let CategoryResolver = class CategoryResolver {
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -96,11 +95,11 @@ let CategoryResolver = class CategoryResolver {
                     .getRepository(entity_1.Category)
                     .delete({ uuid });
                 if (result.affected < 1)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No category matched this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No category matched this ID.");
                 return { ok: true };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -120,6 +119,7 @@ __decorate([
 ], CategoryResolver.prototype, "category", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["addCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.NewCategoryInput]),
@@ -127,7 +127,7 @@ __decorate([
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CategoryResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
@@ -135,7 +135,7 @@ __decorate([
 ], CategoryResolver.prototype, "updateCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
-    type_graphql_1.UseMiddleware(authorization_1.isStaff),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["deleteCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),

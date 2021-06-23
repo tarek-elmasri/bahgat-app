@@ -24,9 +24,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartResolver = void 0;
 const types_1 = require("../types");
 const type_graphql_1 = require("type-graphql");
-const Err_1 = require("../errors/Err");
+const errors_1 = require("../errors");
 const entity_1 = require("../entity");
-const codes_1 = require("../errors/codes");
 let CartResolver = class CartResolver {
     myCart({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -39,7 +38,7 @@ let CartResolver = class CartResolver {
                 };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
@@ -48,7 +47,7 @@ let CartResolver = class CartResolver {
             try {
                 const item = yield entity_1.Item.findOne({ where: { uuid: itemUuid } });
                 if (!item)
-                    throw new Err_1.Err(codes_1.ErrCode.NOT_FOUND, "No Item found for this ID.");
+                    throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item found for this ID.");
                 yield entity_1.CartsItems.create({
                     cartUuid: req.session.cartUuid,
                     itemUuid,
@@ -57,7 +56,7 @@ let CartResolver = class CartResolver {
                 return { payload: item };
             }
             catch (err) {
-                return Err_1.Err.ResponseBuilder(err);
+                return errors_1.Err.ResponseBuilder(err);
             }
         });
     }
