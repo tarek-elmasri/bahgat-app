@@ -11,141 +11,150 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateItemInput = exports.newItemInput = void 0;
 const type_graphql_1 = require("type-graphql");
+let newItemFields = class newItemFields {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], newItemFields.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], newItemFields.prototype, "img", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "price", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "stock", void 0);
+__decorate([
+    type_graphql_1.Field({ defaultValue: false }),
+    __metadata("design:type", Boolean)
+], newItemFields.prototype, "infiniteStock", void 0);
+__decorate([
+    type_graphql_1.Field({ defaultValue: false }),
+    __metadata("design:type", Boolean)
+], newItemFields.prototype, "notifyLowStock", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "notifyStockOfQuantity", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], newItemFields.prototype, "patchNo", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], newItemFields.prototype, "weight", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "costValue", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "discountPrice", void 0);
+__decorate([
+    type_graphql_1.Field({ defaultValue: false }),
+    __metadata("design:type", Boolean)
+], newItemFields.prototype, "haveDiscount", void 0);
+__decorate([
+    type_graphql_1.Field({ defaultValue: false }),
+    __metadata("design:type", Boolean)
+], newItemFields.prototype, "quantityLimitOnDiscount", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    __metadata("design:type", Number)
+], newItemFields.prototype, "maxQuantityOnDiscount", void 0);
+__decorate([
+    type_graphql_1.Field(() => Date, { nullable: true }),
+    __metadata("design:type", Date)
+], newItemFields.prototype, "discountEndDate", void 0);
+newItemFields = __decorate([
+    type_graphql_1.InputType()
+], newItemFields);
 let newItemInput = class newItemInput {
 };
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], newItemInput.prototype, "name", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], newItemInput.prototype, "img", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "price", void 0);
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "stock", void 0);
-__decorate([
-    type_graphql_1.Field({ defaultValue: false }),
-    __metadata("design:type", Boolean)
-], newItemInput.prototype, "infiniteStock", void 0);
-__decorate([
-    type_graphql_1.Field({ defaultValue: false }),
-    __metadata("design:type", Boolean)
-], newItemInput.prototype, "notifyLowStock", void 0);
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "notifyStockOfQuantity", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], newItemInput.prototype, "patchNo", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], newItemInput.prototype, "weight", void 0);
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "costValue", void 0);
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "discountPrice", void 0);
-__decorate([
-    type_graphql_1.Field({ defaultValue: false }),
-    __metadata("design:type", Boolean)
-], newItemInput.prototype, "haveDiscount", void 0);
-__decorate([
-    type_graphql_1.Field({ defaultValue: false }),
-    __metadata("design:type", Boolean)
-], newItemInput.prototype, "quantityLimitOnDiscount", void 0);
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
-    __metadata("design:type", Number)
-], newItemInput.prototype, "maxQuantityOnDiscount", void 0);
-__decorate([
-    type_graphql_1.Field(() => Date, { nullable: true }),
-    __metadata("design:type", Date)
-], newItemInput.prototype, "discountEndDate", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
 ], newItemInput.prototype, "categoryUuid", void 0);
+__decorate([
+    type_graphql_1.Field(() => newItemFields),
+    __metadata("design:type", newItemFields)
+], newItemInput.prototype, "fields", void 0);
 newItemInput = __decorate([
     type_graphql_1.InputType()
 ], newItemInput);
 exports.newItemInput = newItemInput;
-let InputUpdateProperties = class InputUpdateProperties {
+let updateItemFields = class updateItemFields {
 };
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], InputUpdateProperties.prototype, "name", void 0);
+], updateItemFields.prototype, "name", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], InputUpdateProperties.prototype, "img", void 0);
+], updateItemFields.prototype, "img", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "price", void 0);
+], updateItemFields.prototype, "price", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "stock", void 0);
+], updateItemFields.prototype, "stock", void 0);
 __decorate([
     type_graphql_1.Field({ defaultValue: false }),
     __metadata("design:type", Boolean)
-], InputUpdateProperties.prototype, "infiniteStock", void 0);
+], updateItemFields.prototype, "infiniteStock", void 0);
 __decorate([
     type_graphql_1.Field({ defaultValue: false }),
     __metadata("design:type", Boolean)
-], InputUpdateProperties.prototype, "notifyLowStock", void 0);
+], updateItemFields.prototype, "notifyLowStock", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "notifyStockOfQuantity", void 0);
+], updateItemFields.prototype, "notifyStockOfQuantity", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], InputUpdateProperties.prototype, "patchNo", void 0);
+], updateItemFields.prototype, "patchNo", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], InputUpdateProperties.prototype, "weight", void 0);
+], updateItemFields.prototype, "weight", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "costValue", void 0);
+], updateItemFields.prototype, "costValue", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "discountPrice", void 0);
+], updateItemFields.prototype, "discountPrice", void 0);
 __decorate([
     type_graphql_1.Field({ defaultValue: false }),
     __metadata("design:type", Boolean)
-], InputUpdateProperties.prototype, "haveDiscount", void 0);
+], updateItemFields.prototype, "haveDiscount", void 0);
 __decorate([
     type_graphql_1.Field({ defaultValue: false }),
     __metadata("design:type", Boolean)
-], InputUpdateProperties.prototype, "quantityLimitOnDiscount", void 0);
+], updateItemFields.prototype, "quantityLimitOnDiscount", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Number)
-], InputUpdateProperties.prototype, "maxQuantityOnDiscount", void 0);
+], updateItemFields.prototype, "maxQuantityOnDiscount", void 0);
 __decorate([
     type_graphql_1.Field(() => Date, { nullable: true }),
     __metadata("design:type", Date)
-], InputUpdateProperties.prototype, "discountEndDate", void 0);
-InputUpdateProperties = __decorate([
+], updateItemFields.prototype, "discountEndDate", void 0);
+updateItemFields = __decorate([
     type_graphql_1.InputType()
-], InputUpdateProperties);
+], updateItemFields);
 let updateItemInput = class updateItemInput {
 };
 __decorate([
@@ -153,9 +162,9 @@ __decorate([
     __metadata("design:type", String)
 ], updateItemInput.prototype, "uuid", void 0);
 __decorate([
-    type_graphql_1.Field(() => InputUpdateProperties),
-    __metadata("design:type", InputUpdateProperties)
-], updateItemInput.prototype, "properties", void 0);
+    type_graphql_1.Field(() => updateItemFields),
+    __metadata("design:type", updateItemFields)
+], updateItemInput.prototype, "fields", void 0);
 updateItemInput = __decorate([
     type_graphql_1.InputType()
 ], updateItemInput);

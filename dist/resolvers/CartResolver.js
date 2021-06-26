@@ -62,14 +62,14 @@ let CartResolver = class CartResolver {
     }
 };
 __decorate([
-    type_graphql_1.Query(() => types_1.CartResponse),
+    type_graphql_1.Query(() => types_1.PayloadResponse),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CartResolver.prototype, "myCart", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     __param(0, type_graphql_1.Arg("itemUuid")),
     __param(1, type_graphql_1.Arg("quantity")),
     __param(2, type_graphql_1.Ctx()),

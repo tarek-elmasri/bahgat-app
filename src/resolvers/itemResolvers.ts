@@ -3,10 +3,10 @@ import { Item, Category } from "../entity";
 import { ErrCode, Err } from "../errors";
 import { getConnection } from "typeorm";
 import {
-  ItemResponse,
   newItemInput,
   updateItemInput,
   SuccessResponse,
+  PayloadResponse,
 } from "../types";
 import { isAuthorized } from "../middlewares";
 import { createItemRules, myValidator } from "../utils/validators/myValidator";
@@ -18,8 +18,8 @@ export class ItemResolver {
     return await Item.find({ relations: ["category"] });
   }
 
-  @Query(() => ItemResponse, { nullable: true })
-  async item(@Arg("uuid") uuid: string): Promise<ItemResponse> {
+  @Query(() => PayloadResponse, { nullable: true })
+  async item(@Arg("uuid") uuid: string): Promise<PayloadResponse> {
     try {
       const item = await Item.findOne({
         where: { uuid },
@@ -36,15 +36,17 @@ export class ItemResolver {
     }
   }
 
-  @Mutation(() => ItemResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["addItem"]))
-  async createItem(@Arg("input") input: newItemInput): Promise<ItemResponse> {
+  async createItem(
+    @Arg("input") { categoryUuid, fields }: newItemInput
+  ): Promise<PayloadResponse> {
     try {
-      const formErrors = await myValidator(input, createItemRules);
+      const formErrors = await myValidator(fields, createItemRules);
       if (formErrors) return { errors: formErrors };
 
       const category = await Category.findOne({
-        where: { uuid: input.categoryUuid },
+        where: { uuid: categoryUuid },
       });
 
       if (!category)
@@ -54,28 +56,28 @@ export class ItemResolver {
         );
 
       return {
-        payload: await Item.create(input).save(),
+        payload: await Item.create({ ...fields, categoryUuid }).save(),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
     }
   }
 
-  @Mutation(() => ItemResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["updateItem"]))
   async updateItem(
-    @Arg("input") { uuid, properties }: updateItemInput
-  ): Promise<ItemResponse> {
+    @Arg("input") { uuid, fields }: updateItemInput
+  ): Promise<PayloadResponse> {
     try {
       const item = await Item.findOne({ where: { uuid } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item Matches this ID.");
 
       //matching the required partial fields for validation
-      const formInput = { name: properties.name || item.name };
+      const formInput = { name: fields.name || item.name };
       const formErrors = await myValidator(formInput, createItemRules);
       if (formErrors) return { errors: formErrors };
 
-      await getConnection().getRepository(Item).update({ uuid }, properties);
+      await getConnection().getRepository(Item).update({ uuid }, fields);
 
       const updated = await Item.findOne({
         where: { uuid },

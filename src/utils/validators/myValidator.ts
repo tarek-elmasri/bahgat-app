@@ -1,6 +1,11 @@
 import niv from "node-input-validator";
-import { ErrCode } from "../../errors/codes";
+import { ErrCode } from "../../errors";
 import { MyError } from "../../types";
+
+export const updateUserRules = {
+  username: "required|minLength:4",
+  email: "required|email",
+};
 
 export const createUserRules = {
   username: "required|minLength:4",

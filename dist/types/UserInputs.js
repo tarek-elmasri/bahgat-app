@@ -9,49 +9,37 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.CreateUserInput = void 0;
+exports.LoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.RegisterInput = void 0;
 const type_graphql_1 = require("type-graphql");
-let CreateUserInput = class CreateUserInput {
+const Role_1 = require("./Role");
+let RegisterInput = class RegisterInput {
 };
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], CreateUserInput.prototype, "username", void 0);
+], RegisterInput.prototype, "username", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], CreateUserInput.prototype, "email", void 0);
+], RegisterInput.prototype, "email", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], CreateUserInput.prototype, "password", void 0);
-CreateUserInput = __decorate([
+], RegisterInput.prototype, "password", void 0);
+RegisterInput = __decorate([
     type_graphql_1.InputType()
-], CreateUserInput);
-exports.CreateUserInput = CreateUserInput;
-let UpdateUserProperties = class UpdateUserProperties {
-};
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], UpdateUserProperties.prototype, "username", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], UpdateUserProperties.prototype, "email", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], UpdateUserProperties.prototype, "password", void 0);
-UpdateUserProperties = __decorate([
-    type_graphql_1.InputType()
-], UpdateUserProperties);
+], RegisterInput);
+exports.RegisterInput = RegisterInput;
 let UpdateUserInput = class UpdateUserInput {
 };
 __decorate([
-    type_graphql_1.Field(() => UpdateUserProperties),
-    __metadata("design:type", UpdateUserProperties)
-], UpdateUserInput.prototype, "fields", void 0);
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], UpdateUserInput.prototype, "username", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], UpdateUserInput.prototype, "email", void 0);
 UpdateUserInput = __decorate([
     type_graphql_1.InputType()
 ], UpdateUserInput);
@@ -108,7 +96,7 @@ __decorate([
     __metadata("design:type", String)
 ], PanelUpdateUserProperties.prototype, "email", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field(() => Role_1.Role, { nullable: true }),
     __metadata("design:type", String)
 ], PanelUpdateUserProperties.prototype, "role", void 0);
 PanelUpdateUserProperties = __decorate([

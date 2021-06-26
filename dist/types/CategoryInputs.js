@@ -25,19 +25,19 @@ NewCategoryInput = __decorate([
     type_graphql_1.InputType()
 ], NewCategoryInput);
 exports.NewCategoryInput = NewCategoryInput;
-let UpdateProperties = class UpdateProperties {
+let updateCategoryFields = class updateCategoryFields {
 };
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], UpdateProperties.prototype, "name", void 0);
+], updateCategoryFields.prototype, "name", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], UpdateProperties.prototype, "description", void 0);
-UpdateProperties = __decorate([
+], updateCategoryFields.prototype, "description", void 0);
+updateCategoryFields = __decorate([
     type_graphql_1.InputType()
-], UpdateProperties);
+], updateCategoryFields);
 let UpdateCategoryInput = class UpdateCategoryInput {
 };
 __decorate([
@@ -45,8 +45,8 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateCategoryInput.prototype, "uuid", void 0);
 __decorate([
-    type_graphql_1.Field(() => UpdateProperties),
-    __metadata("design:type", UpdateProperties)
+    type_graphql_1.Field(() => updateCategoryFields),
+    __metadata("design:type", updateCategoryFields)
 ], UpdateCategoryInput.prototype, "fields", void 0);
 UpdateCategoryInput = __decorate([
     type_graphql_1.InputType()

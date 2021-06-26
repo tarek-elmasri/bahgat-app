@@ -10,7 +10,7 @@ export class NewCategoryInput {
 }
 
 @InputType()
-class UpdateProperties {
+class updateCategoryFields {
   @Field(() => String, { nullable: true })
   name: string;
 
@@ -23,8 +23,8 @@ export class UpdateCategoryInput {
   @Field(() => String, { nullable: false })
   uuid: string;
 
-  @Field(() => UpdateProperties)
-  fields: UpdateProperties;
+  @Field(() => updateCategoryFields)
+  fields: updateCategoryFields;
 }
 
 @InputType()

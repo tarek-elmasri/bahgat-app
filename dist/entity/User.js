@@ -22,6 +22,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+const types_1 = require("../types");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const _1 = require("./");
@@ -39,6 +40,9 @@ let User = class User extends typeorm_1.BaseEntity {
     }
     setRefreshToken() {
         this.refresh_token = middlewares_1.createRefreshToken({ userUuid: this.uuid });
+    }
+    normalizeEmail() {
+        this.email = this.email.normalize().toLowerCase();
     }
 };
 __decorate([
@@ -62,8 +66,8 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    type_graphql_1.Field(() => String),
-    typeorm_1.Column({ default: "USER" }),
+    type_graphql_1.Field(() => types_1.Role, { defaultValue: types_1.Role.USER }),
+    typeorm_1.Column({ default: types_1.Role.USER }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
@@ -83,7 +87,6 @@ __decorate([
     __metadata("design:type", Date)
 ], User.prototype, "updatedAt", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
     typeorm_1.Column({ nullable: true }),
     __metadata("design:type", String)
 ], User.prototype, "authorizationId", void 0);
@@ -93,6 +96,7 @@ __decorate([
         onDelete: "CASCADE",
         cascade: true,
         nullable: true,
+        eager: true,
     }),
     typeorm_1.JoinColumn(),
     __metadata("design:type", _1.Authorization)
@@ -110,6 +114,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], User.prototype, "setRefreshToken", null);
+__decorate([
+    typeorm_1.BeforeInsert(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], User.prototype, "normalizeEmail", null);
 User = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity("users")

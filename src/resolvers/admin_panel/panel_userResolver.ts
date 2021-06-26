@@ -1,19 +1,11 @@
 import { User } from "../../entity";
 import { ErrCode, Err } from "../../errors";
 import {
-  MyContext,
   PanelUpdateUserInput,
+  PayloadResponse,
   SuccessResponse,
-  UserResponse,
 } from "../../types";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  Query,
-  Resolver,
-  UseMiddleware,
-} from "type-graphql";
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import {
   createUserRules,
   myValidator,
@@ -22,11 +14,19 @@ import { getConnection } from "typeorm";
 import { Authorization } from "../../entity";
 import { isAuthorized } from "../../middlewares";
 
+/*
+queries: 
+  panel_user
+  panel_users
+mutations:
+  panel-updateUser
+  panel_deleteUser
+*/
 @Resolver()
 export class panel_userResolver {
-  @Query(() => UserResponse)
+  @Query(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["viewAllUsers"]))
-  async panel_user(@Arg("uuid") uuid: string): Promise<UserResponse> {
+  async panel_user(@Arg("uuid") uuid: string): Promise<PayloadResponse> {
     try {
       const user = await User.findOne({
         where: { uuid },
@@ -47,17 +47,17 @@ export class panel_userResolver {
     return await User.find();
   }
 
-  @Query(() => Authorization, { nullable: true })
-  panel_myAuthorization(@Ctx() { req }: MyContext) {
-    return req.user!.authorization;
-  }
+  // @Query(() => Authorization, { nullable: true })
+  // panel_myAuthorization(@Ctx() { req }: MyContext) {
+  //   return req.user!.authorization;
+  // }
 
-  @Mutation(() => UserResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["updateUser"]))
   async panel_updateUser(
     @Arg("properties", () => PanelUpdateUserInput)
     { uuid, fields, authorization }: PanelUpdateUserInput
-  ): Promise<UserResponse> {
+  ): Promise<PayloadResponse> {
     try {
       const existedUser = await User.findOne({
         where: { uuid },

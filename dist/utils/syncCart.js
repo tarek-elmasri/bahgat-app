@@ -13,11 +13,14 @@ exports.syncCart = void 0;
 const typeorm_1 = require("typeorm");
 const entity_1 = require("../entity");
 const sessionBuilder_1 = require("../middlewares/sessionBuilder");
-const syncCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { session, user } = req;
+const errors_1 = require("../errors");
+const syncCart = (user, req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { session } = req;
     const userCart = yield entity_1.Cart.findOne({
         where: { userUuid: user.uuid },
     });
+    if (!userCart)
+        throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "no cart found for this user, .. internal error");
     yield typeorm_1.getConnection()
         .getRepository(entity_1.CartsItems)
         .createQueryBuilder()

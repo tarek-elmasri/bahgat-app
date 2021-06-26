@@ -25,12 +25,12 @@ exports.UserResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const types_1 = require("../types");
 const entity_1 = require("../entity");
-const bcryptjs_1 = require("bcryptjs");
 const errors_1 = require("../errors");
 const typeorm_1 = require("typeorm");
 const middlewares_1 = require("../middlewares");
 const utils_1 = require("../utils");
 const myValidator_1 = require("../utils/validators/myValidator");
+const auth_1 = require("../auth");
 let MeResponse = class MeResponse {
 };
 __decorate([
@@ -56,20 +56,11 @@ let UserResolver = class UserResolver {
             return { data: req.user, cart };
         });
     }
-    login(input, { req, res }) {
+    login(credentials, { req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield entity_1.User.findOne({
-                    where: { email: input.email.normalize().toLowerCase() },
-                    relations: ["authorization"],
-                });
-                if (!user)
-                    throw new errors_1.Err(errors_1.ErrCode.INVALID_LOGIN, "Invalid Email or password.");
-                const verified = bcryptjs_1.compare(input.password, user.password);
-                if (!verified)
-                    throw new errors_1.Err(errors_1.ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
-                req.user = user;
-                yield utils_1.syncCart(req, res);
+                const user = yield auth_1.Login(credentials);
+                yield utils_1.syncCart(user, req, res);
                 return {
                     payload: user,
                 };
@@ -82,21 +73,14 @@ let UserResolver = class UserResolver {
     register(input, { req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const { session } = req;
                 const formErrors = yield myValidator_1.myValidator(input, myValidator_1.createUserRules);
                 if (formErrors)
                     return { errors: formErrors };
-                const { username, email, password } = input;
-                const hashedPassword = yield bcryptjs_1.hash(password, 12);
-                const user = yield entity_1.User.create({
-                    username,
-                    email: email.normalize().toLowerCase(),
-                    password: hashedPassword,
-                    role: types_1.Role.USER,
-                    authorization: undefined,
-                }).save();
-                yield entity_1.Cart.update({ uuid: req.session.cartUuid }, { userUuid: user.uuid });
-                req.session.refresh_token = user.refresh_token;
-                yield middlewares_1.updateSession(req.session, user, req, res);
+                const user = yield auth_1.Register(input);
+                yield entity_1.Cart.update({ uuid: session.cartUuid }, { userUuid: user.uuid });
+                session.refresh_token = user.refresh_token;
+                yield middlewares_1.updateSession(session, user, req, res);
                 return {
                     payload: user,
                 };
@@ -106,26 +90,24 @@ let UserResolver = class UserResolver {
             }
         });
     }
-    updateMe({ fields }, { req }) {
+    updateMe(fields, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let { user } = req;
+                const { user } = req;
+                const updatedFields = fields;
                 if (!user)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No user found for current request.");
-                const userForm = {
-                    username: fields.username || user.username,
-                    email: fields.email.normalize().toLowerCase() || user.email,
-                    password: fields.password || user.password,
-                };
-                const formErrors = yield myValidator_1.myValidator(userForm, myValidator_1.createUserRules);
+                const formErrors = yield myValidator_1.myValidator(fields, myValidator_1.updateUserRules);
                 if (formErrors)
                     return { errors: formErrors };
+                fields.email
+                    ? (updatedFields.email = utils_1.normalizeEmail(fields.email))
+                    : null;
                 yield typeorm_1.getConnection()
                     .getRepository(entity_1.User)
-                    .update({ uuid: user.uuid }, fields);
-                user = yield entity_1.User.findOne({ where: { uuid: user.uuid } });
+                    .update({ uuid: user.uuid }, updatedFields);
                 return {
-                    payload: user,
+                    payload: yield entity_1.User.findOne({ where: { uuid: user.uuid } }),
                 };
             }
             catch (err) {
@@ -142,7 +124,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "me", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.UserResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isGuest),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
@@ -151,17 +133,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.UserResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isGuest),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [types_1.CreateUserInput, Object]),
+    __metadata("design:paramtypes", [types_1.RegisterInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.UserResponse),
-    __param(0, type_graphql_1.Arg("properties", () => types_1.UpdateUserInput)),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
+    __param(0, type_graphql_1.Arg("fields", () => types_1.UpdateUserInput)),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateUserInput, Object]),

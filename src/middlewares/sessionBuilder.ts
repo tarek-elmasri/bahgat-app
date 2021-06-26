@@ -40,6 +40,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
 
   if (!cookie) {
     session = await createSession(req, res);
+    console.log("no cookies");
     return next();
   }
   //find session by cookie.id
@@ -48,12 +49,14 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   // no session in db (** in case deleting all sessions to force logging out)--> create new session
   if (!session) {
     session = await createSession(req, res);
+    console.log("no session i database");
     return next();
   }
 
   // available session without user --> load session
   if (!session.access_token) {
     req.session = session;
+    console.log("no access token in session");
     return next();
   }
 
@@ -61,28 +64,32 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   // ---> decode token
   const payload = decodeAccessToken(session.access_token);
   if (payload) {
+    console.log("successful decoding of access token");
     // successfull accessToken
     user = await User.findOne({
       where: { uuid: payload.userUuid },
-      relations: ["authorization"],
     });
     if (user) {
+      console.log("found user after decoding");
       //update session accessToken ,  setCookies , load session and user , next
       await updateSession(session, user, req, res);
     } else {
+      console.log("failed to find user after decoding");
       // reset session, set cookies , next (currupted data)
       await resetSession(session, req, res);
     }
   } else {
     //expired access Token --> validate refresh Token match
+    console.log("failed decoding .. no payload");
     user = await User.findOne({
       where: { refresh_token: session.refresh_token },
-      relations: ["authorization"],
     });
     if (!user) {
+      console.log("no refresh token matched the user");
       // user changed password --> no refresh token match
       await resetSession(session, req, res);
     } else {
+      console.log("found a refresh token match");
       //session refreshToken matched user refresh token
       await updateSession(session, user, req, res);
     }
@@ -122,7 +129,7 @@ const decodeAccessToken = (access_token: string): any => {
 };
 
 const createAccessToken = (data: any) => {
-  return sign(data, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: "15m" });
+  return sign(data, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: "1m" });
 };
 
 export const updateSession = async (

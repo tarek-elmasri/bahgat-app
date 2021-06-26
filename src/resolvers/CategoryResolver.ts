@@ -1,10 +1,10 @@
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import {
-  CategoryResponse,
   NewCategoryInput,
   UpdateCategoryInput,
   DeleteCategoryInput,
   SuccessResponse,
+  PayloadResponse,
 } from "../types";
 import { getConnection } from "typeorm";
 import { ErrCode, Err } from "../errors";
@@ -22,8 +22,8 @@ export class CategoryResolver {
     return await Category.find({ relations: ["items"] });
   }
 
-  @Query(() => CategoryResponse)
-  async category(@Arg("uuid") uuid: string): Promise<CategoryResponse> {
+  @Query(() => PayloadResponse)
+  async category(@Arg("uuid") uuid: string): Promise<PayloadResponse> {
     try {
       const category = await Category.findOne({
         where: { uuid },
@@ -38,11 +38,11 @@ export class CategoryResolver {
     }
   }
 
-  @Mutation(() => CategoryResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["addCategory"]))
   async createCategory(
     @Arg("input") input: NewCategoryInput
-  ): Promise<CategoryResponse> {
+  ): Promise<PayloadResponse> {
     try {
       const formErrors = await myValidator(input, createCategoryRules);
       if (formErrors) return { errors: formErrors };
@@ -55,11 +55,11 @@ export class CategoryResolver {
     }
   }
 
-  @Mutation(() => CategoryResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["updateCategory"]))
   async updateCategory(
     @Arg("input") { uuid, fields }: UpdateCategoryInput
-  ): Promise<CategoryResponse> {
+  ): Promise<PayloadResponse> {
     try {
       const formErrors = await myValidator(fields, createCategoryRules);
       if (formErrors) return { errors: formErrors };

@@ -9,20 +9,34 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import {
-  CreateUserInput,
+  RegisterInput,
   UpdateUserInput,
   MyContext,
-  Role,
-  UserResponse,
   LoginInput,
+  PayloadResponse,
 } from "../types";
 import { User, Cart } from "../entity";
-import { hash, compare } from "bcryptjs";
 import { ErrCode, Err } from "../errors";
 import { getConnection } from "typeorm";
 import { updateSession, isGuest } from "../middlewares";
-import { syncCart } from "../utils";
-import { createUserRules, myValidator } from "../utils/validators/myValidator";
+import { normalizeEmail, syncCart } from "../utils";
+import {
+  createUserRules,
+  myValidator,
+  updateUserRules,
+} from "../utils/validators/myValidator";
+import { Login, Register } from "../auth";
+
+/*
+queries:
+    me
+
+mutations:
+    login
+    register
+    updateMe
+    resetPassword
+*/
 
 @ObjectType()
 class MeResponse {
@@ -47,30 +61,15 @@ export class UserResolver {
     return { data: req.user, cart };
   }
 
-  @Mutation(() => UserResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isGuest)
   async login(
-    @Arg("input") input: LoginInput,
+    @Arg("input") credentials: LoginInput,
     @Ctx() { req, res }: MyContext
-  ): Promise<UserResponse> {
+  ): Promise<PayloadResponse> {
     try {
-      const user = await User.findOne({
-        where: { email: input.email.normalize().toLowerCase() },
-        relations: ["authorization"],
-      });
-
-      if (!user)
-        throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or password.");
-
-      const verified = compare(input.password, user.password);
-
-      if (!verified)
-        throw new Err(ErrCode.INVALID_LOGIN, "Invalid Email or Password.");
-
-      //TODO sync user cart with session cart
-      //update session data
-      req.user = user;
-      await syncCart(req, res);
+      const user = await Login(credentials);
+      await syncCart(user, req, res); // syncing guest cart with user cart after successful login followed by updating session and cookies
 
       return {
         payload: user,
@@ -80,34 +79,25 @@ export class UserResolver {
     }
   }
 
-  @Mutation(() => UserResponse)
+  @Mutation(() => PayloadResponse)
   @UseMiddleware(isGuest)
   async register(
-    @Arg("input") input: CreateUserInput,
+    @Arg("input") input: RegisterInput,
     @Ctx() { req, res }: MyContext
-  ): Promise<UserResponse> {
+  ): Promise<PayloadResponse> {
     try {
-      const formErrors = await myValidator(input, createUserRules);
+      const { session } = req;
+
+      const formErrors = await myValidator(input, createUserRules); //validating form
       if (formErrors) return { errors: formErrors };
 
-      const { username, email, password } = input;
-      const hashedPassword = await hash(password, 12);
-      const user = await User.create({
-        username,
-        email: email.normalize().toLowerCase(),
-        password: hashedPassword,
-        role: Role.USER,
-        authorization: undefined,
-      }).save();
+      const user = await Register(input); // create new user in database
 
-      //linking the current cart in session with the new user
-      await Cart.update(
-        { uuid: req.session.cartUuid },
-        { userUuid: user.uuid }
-      );
+      await Cart.update({ uuid: session.cartUuid }, { userUuid: user.uuid }); //linking the current cart in session with the new user
+
       //updating session data to have the new userId
-      req.session.refresh_token = user.refresh_token;
-      await updateSession(req.session, user, req, res);
+      session.refresh_token = user.refresh_token;
+      await updateSession(session, user, req, res);
 
       return {
         payload: user,
@@ -118,38 +108,58 @@ export class UserResolver {
   }
 
   //TODO add authorization same user or admin
-  @Mutation(() => UserResponse)
+  @Mutation(() => PayloadResponse)
   async updateMe(
-    @Arg("properties", () => UpdateUserInput) { fields }: UpdateUserInput,
+    @Arg("fields", () => UpdateUserInput) fields: UpdateUserInput,
     @Ctx() { req }: MyContext
-  ): Promise<UserResponse> {
+  ): Promise<PayloadResponse> {
     try {
-      let { user } = req;
+      const { user } = req;
+      const updatedFields = fields;
+
       if (!user)
         throw new Err(ErrCode.NOT_FOUND, "No user found for current request.");
 
-      //matching the partial form for validation fn
-      const userForm = {
-        username: fields.username || user.username,
-        email: fields.email.normalize().toLowerCase() || user.email,
-        password: fields.password || user.password,
-      };
-
       //validating the form
-      const formErrors = await myValidator(userForm, createUserRules);
+      const formErrors = await myValidator(fields, updateUserRules);
       if (formErrors) return { errors: formErrors };
 
-      // TODO: hashing password if updated
+      //normalizing email if email is updated
+      fields.email
+        ? (updatedFields.email = normalizeEmail(fields.email))
+        : null;
+
+      //update user
       await getConnection()
         .getRepository(User)
-        .update({ uuid: user.uuid }, fields);
+        .update({ uuid: user.uuid }, updatedFields);
 
-      user = await User.findOne({ where: { uuid: user.uuid } });
       return {
-        payload: user,
+        payload: await User.findOne({ where: { uuid: user.uuid } }),
       };
     } catch (err) {
       return Err.ResponseBuilder(err);
     }
   }
+
+  // @Mutation()
+  // async resetPassword(
+  //   @Arg("input") input: {oldPassword: string , newPassword:string}
+  //   @Ctx() {req}:MyContext
+  // ): Promise<PayloadResponse>{
+
+  //   try {
+  //     const formErrors = await myValidator(input , {newPassword: "required|minLength:4"})
+  //     if (formErrors) return {errors: formErrors}
+
+  //     if (!req.user) throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized action")
+  //     const matched = compare(input.oldPassword , req.user.password)
+
+  //     if (!matched) throw new Err(ErrCode.NOT_FOUND, "Invalid password for this user")
+
+  //   } catch (err) {
+
+  //   }
+
+  // }
 }

@@ -1,4 +1,4 @@
-import { MyContext } from "../types";
+import { MyContext, Role } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -34,9 +34,9 @@ export class User extends BaseEntity {
   @Column()
   password: string;
 
-  @Field(() => String)
-  @Column({ default: "USER" })
-  role: string;
+  @Field(() => Role, { defaultValue: Role.USER })
+  @Column({ default: Role.USER })
+  role: Role;
 
   @Field()
   @Column()
@@ -51,7 +51,6 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field(() => String, { nullable: true })
   @Column({ nullable: true })
   authorizationId: string;
 
@@ -60,6 +59,7 @@ export class User extends BaseEntity {
     onDelete: "CASCADE",
     cascade: true,
     nullable: true,
+    eager: true,
   })
   @JoinColumn()
   authorization?: Authorization;
@@ -77,5 +77,10 @@ export class User extends BaseEntity {
   @BeforeInsert()
   setRefreshToken() {
     this.refresh_token = createRefreshToken({ userUuid: this.uuid });
+  }
+
+  @BeforeInsert()
+  normalizeEmail() {
+    this.email = this.email.normalize().toLowerCase();
   }
 }

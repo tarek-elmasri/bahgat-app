@@ -53,19 +53,19 @@ let ItemResolver = class ItemResolver {
             }
         });
     }
-    createItem(input) {
+    createItem({ categoryUuid, fields }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const formErrors = yield myValidator_1.myValidator(input, myValidator_1.createItemRules);
+                const formErrors = yield myValidator_1.myValidator(fields, myValidator_1.createItemRules);
                 if (formErrors)
                     return { errors: formErrors };
                 const category = yield entity_1.Category.findOne({
-                    where: { uuid: input.categoryUuid },
+                    where: { uuid: categoryUuid },
                 });
                 if (!category)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Category matches this Category ID.");
                 return {
-                    payload: yield entity_1.Item.create(input).save(),
+                    payload: yield entity_1.Item.create(Object.assign(Object.assign({}, fields), { categoryUuid })).save(),
                 };
             }
             catch (err) {
@@ -73,17 +73,17 @@ let ItemResolver = class ItemResolver {
             }
         });
     }
-    updateItem({ uuid, properties }) {
+    updateItem({ uuid, fields }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const item = yield entity_1.Item.findOne({ where: { uuid } });
                 if (!item)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item Matches this ID.");
-                const formInput = { name: properties.name || item.name };
+                const formInput = { name: fields.name || item.name };
                 const formErrors = yield myValidator_1.myValidator(formInput, myValidator_1.createItemRules);
                 if (formErrors)
                     return { errors: formErrors };
-                yield typeorm_1.getConnection().getRepository(entity_1.Item).update({ uuid }, properties);
+                yield typeorm_1.getConnection().getRepository(entity_1.Item).update({ uuid }, fields);
                 const updated = yield entity_1.Item.findOne({
                     where: { uuid },
                     relations: ["category"],
@@ -120,14 +120,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ItemResolver.prototype, "items", null);
 __decorate([
-    type_graphql_1.Query(() => types_1.ItemResponse, { nullable: true }),
+    type_graphql_1.Query(() => types_1.PayloadResponse, { nullable: true }),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ItemResolver.prototype, "item", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["addItem"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
@@ -135,7 +135,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ItemResolver.prototype, "createItem", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.ItemResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateItem"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),

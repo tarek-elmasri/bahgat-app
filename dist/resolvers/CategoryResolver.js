@@ -111,14 +111,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "categories", null);
 __decorate([
-    type_graphql_1.Query(() => types_1.CategoryResponse),
+    type_graphql_1.Query(() => types_1.PayloadResponse),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "category", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.CategoryResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["addCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
@@ -126,7 +126,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
-    type_graphql_1.Mutation(() => types_1.CategoryResponse),
+    type_graphql_1.Mutation(() => types_1.PayloadResponse),
     type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),

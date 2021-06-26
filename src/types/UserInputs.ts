@@ -1,7 +1,8 @@
 import { Field, InputType } from "type-graphql";
+import { Role } from "./Role";
 
 @InputType()
-export class CreateUserInput {
+export class RegisterInput {
   @Field()
   username: string;
 
@@ -9,25 +10,16 @@ export class CreateUserInput {
   email: string;
 
   @Field()
-  password: string;
-}
-
-@InputType()
-class UpdateUserProperties {
-  @Field(() => String, { nullable: true })
-  username: string;
-
-  @Field(() => String, { nullable: true })
-  email: string;
-
-  @Field(() => String, { nullable: true })
   password: string;
 }
 
 @InputType()
 export class UpdateUserInput {
-  @Field(() => UpdateUserProperties)
-  fields: UpdateUserProperties;
+  @Field(() => String, { nullable: true })
+  username: string;
+
+  @Field(() => String, { nullable: true })
+  email: string;
 }
 
 @InputType()
@@ -68,8 +60,8 @@ class PanelUpdateUserProperties {
   @Field(() => String, { nullable: true })
   email: string;
 
-  @Field(() => String, { nullable: true })
-  role?: "USER" | "Admin" | "STAFF";
+  @Field(() => Role, { nullable: true })
+  role?: Role;
 }
 
 @InputType()

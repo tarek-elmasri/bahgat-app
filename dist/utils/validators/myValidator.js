@@ -12,9 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.myValidator = exports.createItemRules = exports.createCategoryRules = exports.createUserRules = void 0;
+exports.myValidator = exports.createItemRules = exports.createCategoryRules = exports.createUserRules = exports.updateUserRules = void 0;
 const node_input_validator_1 = __importDefault(require("node-input-validator"));
-const codes_1 = require("../../errors/codes");
+const errors_1 = require("../../errors");
+exports.updateUserRules = {
+    username: "required|minLength:4",
+    email: "required|email",
+};
 exports.createUserRules = {
     username: "required|minLength:4",
     email: "required|email",
@@ -46,7 +50,7 @@ const myValidator = (input, rules) => __awaiter(void 0, void 0, void 0, function
             myErrors.push({
                 field,
                 message: err.message,
-                code: codes_1.ErrCode.INVAID_INPUT_PARAMETER,
+                code: errors_1.ErrCode.INVAID_INPUT_PARAMETER,
             });
         });
     });

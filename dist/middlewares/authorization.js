@@ -17,10 +17,8 @@ const isAuthorized = (keys) => ({ context }, next) => __awaiter(void 0, void 0, 
     const role = (user === null || user === void 0 ? void 0 : user.role) || types_1.Role.GUEST;
     if (role === types_1.Role.ADMIN)
         return next();
-    if (role === types_1.Role.GUEST)
-        throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "The request is unauthorized.");
-    if (!(user === null || user === void 0 ? void 0 : user.authorization))
-        throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "No Authorization found for this user");
+    if (role === types_1.Role.GUEST || !(user === null || user === void 0 ? void 0 : user.authorization))
+        throw new errors_1.Err(errors_1.ErrCode.NOT_AUTHORIZED, "Unauthorized Request.");
     let reqAuth = Object.assign({}, user.authorization);
     keys.map((key) => {
         if (!reqAuth[key])

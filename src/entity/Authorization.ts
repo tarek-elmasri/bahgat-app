@@ -15,7 +15,6 @@ export class Authorization extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Field(() => User)
   @OneToOne(() => User, (user) => user.authorization)
   user: User;
 

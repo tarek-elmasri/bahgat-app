@@ -1,7 +1,7 @@
 import { Field, InputType, Int } from "type-graphql";
 
 @InputType()
-export class newItemInput {
+class newItemFields {
   @Field()
   name: string;
 
@@ -46,13 +46,19 @@ export class newItemInput {
 
   @Field(() => Date, { nullable: true })
   discountEndDate: Date;
-
-  @Field()
-  categoryUuid: string;
 }
 
 @InputType()
-class InputUpdateProperties {
+export class newItemInput {
+  @Field()
+  categoryUuid: string;
+
+  @Field(() => newItemFields)
+  fields: newItemFields;
+}
+
+@InputType()
+class updateItemFields {
   @Field(() => String, { nullable: true })
   name: string;
 
@@ -103,6 +109,6 @@ export class updateItemInput {
   @Field(() => String)
   uuid: string;
 
-  @Field(() => InputUpdateProperties)
-  properties: InputUpdateProperties;
+  @Field(() => updateItemFields)
+  fields: updateItemFields;
 }
