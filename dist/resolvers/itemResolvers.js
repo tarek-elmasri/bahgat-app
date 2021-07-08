@@ -28,11 +28,10 @@ const errors_1 = require("../errors");
 const typeorm_1 = require("typeorm");
 const types_1 = require("../types");
 const middlewares_1 = require("../middlewares");
-const myValidator_1 = require("../utils/validators/myValidator");
 let ItemResolver = class ItemResolver {
     items() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield entity_1.Item.find({ relations: ["category"] });
+            return yield entity_1.Item.find();
         });
     }
     item(uuid) {
@@ -56,9 +55,6 @@ let ItemResolver = class ItemResolver {
     createItem({ categoryUuid, fields }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const formErrors = yield myValidator_1.myValidator(fields, myValidator_1.createItemRules);
-                if (formErrors)
-                    return { errors: formErrors };
                 const category = yield entity_1.Category.findOne({
                     where: { uuid: categoryUuid },
                 });
@@ -79,14 +75,9 @@ let ItemResolver = class ItemResolver {
                 const item = yield entity_1.Item.findOne({ where: { uuid } });
                 if (!item)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item Matches this ID.");
-                const formInput = { name: fields.name || item.name };
-                const formErrors = yield myValidator_1.myValidator(formInput, myValidator_1.createItemRules);
-                if (formErrors)
-                    return { errors: formErrors };
                 yield typeorm_1.getConnection().getRepository(entity_1.Item).update({ uuid }, fields);
                 const updated = yield entity_1.Item.findOne({
                     where: { uuid },
-                    relations: ["category"],
                 });
                 return {
                     payload: updated,

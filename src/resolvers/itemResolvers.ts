@@ -9,13 +9,13 @@ import {
   PayloadResponse,
 } from "../types";
 import { isAuthorized } from "../middlewares";
-import { createItemRules, myValidator } from "../utils/validators/myValidator";
+//import { createItemRules, myValidator } from "../utils/validators/myValidator";
 
 @Resolver()
 export class ItemResolver {
   @Query(() => [Item])
   async items() {
-    return await Item.find({ relations: ["category"] });
+    return await Item.find();
   }
 
   @Query(() => PayloadResponse, { nullable: true })
@@ -42,8 +42,8 @@ export class ItemResolver {
     @Arg("input") { categoryUuid, fields }: newItemInput
   ): Promise<PayloadResponse> {
     try {
-      const formErrors = await myValidator(fields, createItemRules);
-      if (formErrors) return { errors: formErrors };
+      // const formErrors = await myValidator(fields, createItemRules);
+      // if (formErrors) return { errors: formErrors };
 
       const category = await Category.findOne({
         where: { uuid: categoryUuid },
@@ -72,16 +72,15 @@ export class ItemResolver {
       const item = await Item.findOne({ where: { uuid } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item Matches this ID.");
 
-      //matching the required partial fields for validation
-      const formInput = { name: fields.name || item.name };
-      const formErrors = await myValidator(formInput, createItemRules);
-      if (formErrors) return { errors: formErrors };
+      // //matching the required partial fields for validation
+      // const formInput = { name: fields.name || item.name };
+      // const formErrors = await myValidator(formInput, createItemRules);
+      // if (formErrors) return { errors: formErrors };
 
       await getConnection().getRepository(Item).update({ uuid }, fields);
 
       const updated = await Item.findOne({
         where: { uuid },
-        relations: ["category"],
       });
       return {
         payload: updated,

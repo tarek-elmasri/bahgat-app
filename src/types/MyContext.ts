@@ -1,12 +1,13 @@
 import { cartLoader } from "../loaders/cartLoader";
 import { itemLoader } from "../loaders/ItemLoader";
 import { Response, Request } from "express";
-import { User, Session } from "../entity";
+import { User, Session, Cart } from "../entity";
 
 declare global {
   namespace Express {
     export interface Request {
       user?: User;
+      cart: Cart;
       session: Session;
     }
   }

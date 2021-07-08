@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 
 export const Register = async (input: RegisterInput): Promise<User> => {
   const { username, email, password } = input;
-  return await User.create({
+  return User.create({
     username,
     email,
     password: await hash(password, 12),

@@ -1,6 +1,7 @@
 import { MyContext, Role } from "../types";
 import { MiddlewareFn } from "type-graphql";
 import { ErrCode, Err } from "../errors";
+import { UnAuthorizedError } from "../errors/Errors";
 
 type AuthorizationType =
   | "viewAllUsers"
@@ -24,13 +25,12 @@ export const isAuthorized: AuthorizationFn =
     if (role === Role.ADMIN) return next();
 
     if (role === Role.GUEST || !user?.authorization)
-      throw new Err(ErrCode.NOT_AUTHORIZED, "Unauthorized Request.");
+      throw new UnAuthorizedError("Unauthorized Request");
 
     let reqAuth = Object.assign({}, user.authorization);
 
     keys.map((key) => {
-      if (!reqAuth[key])
-        throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized Request.");
+      if (!reqAuth[key]) throw new UnAuthorizedError("Unauthorized Request");
     });
 
     return next();

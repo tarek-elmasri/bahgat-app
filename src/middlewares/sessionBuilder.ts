@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Cart, Session, User } from "../entity";
 import { sign, verify } from "jsonwebtoken";
+import { getConnection } from "typeorm";
 
 type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
@@ -14,7 +15,21 @@ interface MyCookie {
   access_token?: string;
   refresh_token?: string;
 }
+interface setSessionParams {
+  session: Session;
+  user?: User;
+  cart?: Cart;
+  req: Request;
+}
+type setSessionFn = (params: setSessionParams) => Promise<void>;
+type UpdateSessionFn = (
+  session: Session,
+  user: User,
+  req: Request,
+  res: Response
+) => Promise<void>;
 /*
+Builder schema:
 --. no cookie? create new session and set cookies
 -- > cookie ? --> find session by cookie.id
       --> no session --> create new session with set cookies , next
@@ -55,7 +70,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
 
   // available session without user --> load session
   if (!session.access_token) {
-    req.session = session;
+    await setSession({ session, req });
     console.log("no access token in session");
     return next();
   }
@@ -72,11 +87,12 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
     if (user) {
       console.log("found user after decoding");
       //update session accessToken ,  setCookies , load session and user , next
-      await updateSession(session, user, req, res);
+      await setSession({ session, user, req });
     } else {
       console.log("failed to find user after decoding");
       // reset session, set cookies , next (currupted data)
-      await resetSession(session, req, res);
+      await deleteSession(session);
+      await createSession(req, res);
     }
   } else {
     //expired access Token --> validate refresh Token match
@@ -87,7 +103,8 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
     if (!user) {
       console.log("no refresh token matched the user");
       // user changed password --> no refresh token match
-      await resetSession(session, req, res);
+      await deleteSession(session);
+      await createSession(req, res);
     } else {
       console.log("found a refresh token match");
       //session refreshToken matched user refresh token
@@ -97,13 +114,26 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   next();
 };
 
+const loadCart = async (uuid: string) => {
+  const cart = await Cart.findOne({ where: { uuid } });
+  if (!cart) throw new Error("internal error , no cart");
+
+  return cart;
+};
+
+const setSession: setSessionFn = async ({ session, user, cart, req }) => {
+  req.session = session;
+  req.user = user;
+  req.cart = cart || (await loadCart(session.cartUuid));
+};
+
 const createSession = async (req: Request, res: Response) => {
   //create new session and cart cart
   const cart = await Cart.create().save();
   const session = await Session.create({
     cartUuid: cart.uuid,
   }).save();
-  req.session = session;
+  await setSession({ req, session, cart });
   setCookie(session, res);
   return session;
 };
@@ -132,36 +162,23 @@ const createAccessToken = (data: any) => {
   return sign(data, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: "1m" });
 };
 
-export const updateSession = async (
-  session: Session,
-  user: User,
-  req: Request,
-  res: Response
+export const updateSession: UpdateSessionFn = async (
+  session,
+  user,
+  req,
+  res
 ) => {
   session.access_token = createAccessToken({ userUuid: user.uuid });
+  session.refresh_token = user.refresh_token;
   await session.save();
+  await setSession({ session, user, req });
   setCookie(session, res);
-  req.session = session;
-  req.user = user;
 };
 
 export const createRefreshToken = (data: any) => {
   return sign(data, process.env.REFRESH_TOKEN_SECRET!);
 };
 
-export const resetSession = async (
-  session: Session,
-  req: Request,
-  res: Response
-) => {
-  const cart = await Cart.create().save();
-  session.access_token = undefined;
-  session.refresh_token = undefined;
-  session.cartUuid = cart.uuid;
-
-  await session.save();
-  setCookie(session, res);
-
-  req.session = session;
-  req.user = undefined;
+export const deleteSession = async (session: Session) => {
+  await getConnection().getRepository(Session).delete(session);
 };

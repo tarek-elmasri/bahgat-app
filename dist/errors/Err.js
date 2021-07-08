@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Err = void 0;
-class Err {
-    constructor(code, message) {
+const apollo_server_express_1 = require("apollo-server-express");
+class Err extends apollo_server_express_1.ApolloError {
+    constructor(code, message, extention) {
+        super(message, code, extention);
         this.code = code;
         this.message = message;
     }

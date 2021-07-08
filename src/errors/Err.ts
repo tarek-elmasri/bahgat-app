@@ -1,15 +1,17 @@
+import { ApolloError } from "apollo-server-express";
 import { MyError } from "../types";
 import { ErrCode } from "./codes";
 
 interface ErrorResponse {
   errors: [MyError];
 }
-export class Err {
+export class Err extends ApolloError {
   code: string;
   field: string | undefined;
-  message: string | undefined;
+  message: string;
 
-  constructor(code: ErrCode, message: string) {
+  constructor(code: ErrCode, message: string, extention?: Record<string, any>) {
+    super(message, code, extention);
     this.code = code;
     this.message = message;
   }

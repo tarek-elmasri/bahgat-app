@@ -20,4 +20,6 @@ __exportStar(require("./Role"), exports);
 __exportStar(require("./successResponse"), exports);
 __exportStar(require("./constants"), exports);
 __exportStar(require("./PayLoadResponse"), exports);
+__exportStar(require("./User.types"), exports);
+__exportStar(require("./Category.types"), exports);
 //# sourceMappingURL=index.js.map

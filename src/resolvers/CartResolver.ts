@@ -11,7 +11,6 @@ export class CartResolver {
       return {
         payload: await Cart.findOne({
           where: { uuid: req.session.cartUuid },
-          relations: ["cartItems"],
         }),
       };
     } catch (err) {

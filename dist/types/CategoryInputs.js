@@ -28,11 +28,11 @@ exports.NewCategoryInput = NewCategoryInput;
 let updateCategoryFields = class updateCategoryFields {
 };
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], updateCategoryFields.prototype, "name", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], updateCategoryFields.prototype, "description", void 0);
 updateCategoryFields = __decorate([
@@ -41,7 +41,7 @@ updateCategoryFields = __decorate([
 let UpdateCategoryInput = class UpdateCategoryInput {
 };
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: false }),
+    type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], UpdateCategoryInput.prototype, "uuid", void 0);
 __decorate([

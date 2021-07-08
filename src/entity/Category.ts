@@ -34,6 +34,6 @@ export class Category extends BaseEntity {
   updatedAt: Date;
 
   @Field(() => [Item], { nullable: true })
-  @OneToMany(() => Item, (item) => item.category)
+  @OneToMany(() => Item, (item) => item.category, { eager: true })
   items: Item[];
 }

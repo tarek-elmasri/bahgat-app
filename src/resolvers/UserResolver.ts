@@ -1,9 +1,7 @@
 import {
   Arg,
   Ctx,
-  Field,
   Mutation,
-  ObjectType,
   Query,
   Resolver,
   UseMiddleware,
@@ -13,19 +11,24 @@ import {
   UpdateUserInput,
   MyContext,
   LoginInput,
-  PayloadResponse,
+  LoginResponse,
+  MeResponse,
+  RegisterResponse,
+  LoginSuccess,
+  RegisterErrors,
+  UpdateMeResponse,
+  //  InputError,
 } from "../types";
-import { User, Cart } from "../entity";
-import { ErrCode, Err } from "../errors";
-import { getConnection } from "typeorm";
-import { updateSession, isGuest } from "../middlewares";
-import { normalizeEmail, syncCart } from "../utils";
-import {
-  createUserRules,
-  myValidator,
-  updateUserRules,
-} from "../utils/validators/myValidator";
+import { User } from "../entity";
+import { updateSession, isGuest, deleteSession } from "../middlewares";
+import { normalizeEmail, syncCart, updateEntity } from "../utils";
 import { Login, Register } from "../auth";
+import {
+  loginValidator,
+  registerValidator,
+  updateMeValidator,
+} from "../utils/validators";
+import { OnError, UnAuthorizedError } from "../errors";
 
 /*
 queries:
@@ -38,128 +41,130 @@ mutations:
     resetPassword
 */
 
-@ObjectType()
-class MeResponse {
-  @Field(() => User, { nullable: true })
-  data: User | undefined;
-
-  @Field(() => Cart, { nullable: true })
-  cart: Cart | undefined;
-}
-
 @Resolver()
 export class UserResolver {
   @Query(() => MeResponse, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<MeResponse> {
-    const cart = await Cart.findOne({
-      where: {
-        uuid: req.session.cartUuid,
-      },
-      relations: ["cartItems"],
-    });
-
-    return { data: req.user, cart };
+    const { cart, user } = req;
+    return { user, cart };
   }
 
-  @Mutation(() => PayloadResponse)
+  @Mutation(() => LoginResponse)
   @UseMiddleware(isGuest)
   async login(
     @Arg("input") credentials: LoginInput,
     @Ctx() { req, res }: MyContext
-  ): Promise<PayloadResponse> {
-    try {
-      const user = await Login(credentials);
-      await syncCart(user, req, res); // syncing guest cart with user cart after successful login followed by updating session and cookies
-
+  ): Promise<LoginResponse> {
+    //validate input
+    const formErrors = await loginValidator(credentials);
+    if (formErrors)
       return {
-        payload: user,
+        errors: new OnError(
+          "INVALID_CREDENTIALS",
+          "Invalid Email or Password."
+        ),
       };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+
+    //Authentication
+    const user = await Login(credentials);
+    if (!user)
+      return {
+        errors: new OnError(
+          "INVALID_CREDENTIALS",
+          "Invalid Email or Password."
+        ),
+      };
+
+    const cart = await syncCart(user, req); // syncing guest cart with user cart after successful login
+
+    //updating user session and cookies
+    const { session } = req;
+    session.cartUuid = cart.uuid;
+    await updateSession(session, user, req, res);
+
+    return { payload: new LoginSuccess(user, cart) };
   }
 
-  @Mutation(() => PayloadResponse)
+  @Mutation(() => RegisterResponse)
   @UseMiddleware(isGuest)
   async register(
     @Arg("input") input: RegisterInput,
     @Ctx() { req, res }: MyContext
-  ): Promise<PayloadResponse> {
-    try {
-      const { session } = req;
+  ): Promise<RegisterResponse> {
+    // validaate input fields
+    const formErrors = await registerValidator(input);
+    if (formErrors) return { errors: formErrors };
 
-      const formErrors = await myValidator(input, createUserRules); //validating form
-      if (formErrors) return { errors: formErrors };
-
-      const user = await Register(input); // create new user in database
-
-      await Cart.update({ uuid: session.cartUuid }, { userUuid: user.uuid }); //linking the current cart in session with the new user
-
-      //updating session data to have the new userId
-      session.refresh_token = user.refresh_token;
-      await updateSession(session, user, req, res);
-
+    // check if email already exists in db
+    let user = await User.findOne({
+      where: { email: normalizeEmail(input.email) },
+    });
+    if (user)
       return {
-        payload: user,
+        errors: new RegisterErrors("EMAIL_ALREADY_EXISTS", [
+          "Email already exists.",
+        ]),
       };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+
+    user = await Register(input); // create new user in database
+
+    // update current session cart userId field from null to the new registered user
+    const { session, cart } = req;
+    cart.userUuid = user.uuid; //linking the current cart in session with the new user
+    await cart.save();
+    //updating session data to have the new userId and refresh token
+    await updateSession(session, user, req, res);
+
+    return { payload: new LoginSuccess(user, cart) };
   }
 
   //TODO add authorization same user or admin
-  @Mutation(() => PayloadResponse)
+  @Mutation(() => UpdateMeResponse)
   async updateMe(
     @Arg("fields", () => UpdateUserInput) fields: UpdateUserInput,
     @Ctx() { req }: MyContext
-  ): Promise<PayloadResponse> {
-    try {
-      const { user } = req;
-      const updatedFields = fields;
+  ): Promise<UpdateMeResponse> {
+    // current user ?
+    const { user } = req;
+    if (!user) throw new UnAuthorizedError("Not Logged IN");
 
-      if (!user)
-        throw new Err(ErrCode.NOT_FOUND, "No user found for current request.");
+    //validating the form
+    const formErrors = await updateMeValidator(fields);
+    if (formErrors) return { errors: formErrors };
 
-      //validating the form
-      const formErrors = await myValidator(fields, updateUserRules);
-      if (formErrors) return { errors: formErrors };
+    //update user
+    const updatedUser = await updateEntity(
+      User,
+      { uuid: user.uuid },
+      { email: normalizeEmail(fields.email), username: fields.username }
+    );
 
-      //normalizing email if email is updated
-      fields.email
-        ? (updatedFields.email = normalizeEmail(fields.email))
-        : null;
-
-      //update user
-      await getConnection()
-        .getRepository(User)
-        .update({ uuid: user.uuid }, updatedFields);
-
-      return {
-        payload: await User.findOne({ where: { uuid: user.uuid } }),
-      };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+    return { payload: updatedUser! };
   }
 
-  // @Mutation()
-  // async resetPassword(
-  //   @Arg("input") input: {oldPassword: string , newPassword:string}
-  //   @Ctx() {req}:MyContext
-  // ): Promise<PayloadResponse>{
-
-  //   try {
-  //     const formErrors = await myValidator(input , {newPassword: "required|minLength:4"})
-  //     if (formErrors) return {errors: formErrors}
-
-  //     if (!req.user) throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized action")
-  //     const matched = compare(input.oldPassword , req.user.password)
-
-  //     if (!matched) throw new Err(ErrCode.NOT_FOUND, "Invalid password for this user")
-
-  //   } catch (err) {
-
-  //   }
-
-  // }
+  @Mutation(() => Boolean)
+  async LogOut(@Ctx() { req }: MyContext) {
+    await deleteSession(req.session);
+    return true;
+  }
 }
+// @Mutation()
+// async resetPassword(
+//   @Arg("input") input: {oldPassword: string , newPassword:string}
+//   @Ctx() {req}:MyContext
+// ): Promise<PayloadResponse>{
+
+//   try {
+//     const formErrors = await myValidator(input , {newPassword: "required|minLength:4"})
+//     if (formErrors) return {errors: formErrors}
+
+//     if (!req.user) throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized action")
+//     const matched = compare(input.oldPassword , req.user.password)
+
+//     if (!matched) throw new Err(ErrCode.NOT_FOUND, "Invalid password for this user")
+
+//   } catch (err) {
+
+//   }
+
+// }

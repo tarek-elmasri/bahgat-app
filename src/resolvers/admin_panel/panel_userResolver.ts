@@ -6,10 +6,7 @@ import {
   SuccessResponse,
 } from "../../types";
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
-import {
-  createUserRules,
-  myValidator,
-} from "../../utils/validators/myValidator";
+
 import { getConnection } from "typeorm";
 import { Authorization } from "../../entity";
 import { isAuthorized } from "../../middlewares";
@@ -67,15 +64,15 @@ export class panel_userResolver {
         throw new Err(ErrCode.NOT_FOUND, "Invalid UUID for User.");
 
       //matching the partial form for validation fn
-      const userForm = {
-        username: fields.username || existedUser.username,
-        email: fields.email?.normalize().toLowerCase() || existedUser.email,
-        password: existedUser.password,
-      };
+      // const userForm = {
+      //   username: fields.username || existedUser.username,
+      //   email: fields.email?.normalize().toLowerCase() || existedUser.email,
+      //   password: existedUser.password,
+      // };
 
-      //validating the form
-      const formErrors = await myValidator(userForm, createUserRules);
-      if (formErrors) return { errors: formErrors };
+      // //validating the form
+      // const formErrors = await myValidator(userForm, createUserRules);
+      // if (formErrors) return { errors: formErrors };
 
       await getConnection().getRepository(User).update({ uuid }, fields);
 

@@ -25,7 +25,7 @@ __decorate([
 ], Cart.prototype, "userUuid", void 0);
 __decorate([
     type_graphql_1.Field(() => [_1.CartsItems]),
-    typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.cart),
+    typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.cart, { eager: true }),
     __metadata("design:type", Promise)
 ], Cart.prototype, "cartItems", void 0);
 Cart = __decorate([

@@ -1,12 +1,11 @@
 import { getConnection } from "typeorm";
 import { Cart, CartsItems, User } from "../entity";
-import { updateSession } from "../middlewares/sessionBuilder";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { Err, ErrCode } from "../errors";
 
-type SyncCartFn = (user: User, req: Request, res: Response) => Promise<void>;
+type SyncCartFn = (user: User, req: Request) => Promise<Cart>;
 
-export const syncCart: SyncCartFn = async (user, req, res) => {
+export const syncCart: SyncCartFn = async (user, req) => {
   const { session } = req;
 
   const userCart = await Cart.findOne({
@@ -36,7 +35,5 @@ export const syncCart: SyncCartFn = async (user, req, res) => {
     .where("uuid = :uuid", { uuid: session.cartUuid })
     .execute();
 
-  //setting current session to user cart
-  session.cartUuid = userCart.uuid;
-  await updateSession(session, user, req, res);
+  return userCart;
 };

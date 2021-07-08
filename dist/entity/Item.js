@@ -121,7 +121,8 @@ __decorate([
     typeorm_1.ManyToOne(() => _1.Category, (category) => category.items, {
         onDelete: "CASCADE",
     }),
-    __metadata("design:type", _1.Category)
+    typeorm_1.JoinTable({ name: "categoryUuid" }),
+    __metadata("design:type", Promise)
 ], Item.prototype, "category", void 0);
 __decorate([
     typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.item),

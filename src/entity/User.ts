@@ -38,7 +38,6 @@ export class User extends BaseEntity {
   @Column({ default: Role.USER })
   role: Role;
 
-  @Field()
   @Column()
   @Index()
   refresh_token: string;

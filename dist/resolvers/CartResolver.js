@@ -33,7 +33,6 @@ let CartResolver = class CartResolver {
                 return {
                     payload: yield entity_1.Cart.findOne({
                         where: { uuid: req.session.cartUuid },
-                        relations: ["cartItems"],
                     }),
                 };
             }

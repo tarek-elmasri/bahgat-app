@@ -22,7 +22,7 @@ export class Cart extends BaseEntity {
   userUuid?: string;
 
   @Field(() => [CartsItems])
-  @OneToMany(() => CartsItems, (cartItem) => cartItem.cart)
+  @OneToMany(() => CartsItems, (cartItem) => cartItem.cart, { eager: true })
   cartItems: Promise<CartsItems[]>;
 
   //TODO after implementation

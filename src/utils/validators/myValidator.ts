@@ -1,59 +1,46 @@
-import niv from "node-input-validator";
-import { ErrCode } from "../../errors";
-import { MyError } from "../../types";
+import * as yup from "yup";
+import { ValidationError } from "yup";
 
-export const updateUserRules = {
-  username: "required|minLength:4",
-  email: "required|email",
+export const uuidV4 = yup
+  .string()
+  .required("UUID is required.")
+  .uuid("Invalid UUID Syntax.");
+
+// export const uuidValidator = async (uuid: string) => {
+//   try {
+//     await yup
+//       .object()
+//       .shape({ uuid: uuidV4 })
+//       .validate({ uuid }, { abortEarly: false });
+
+//     return undefined;
+//   } catch (err) {
+//     throw new UuidInvalidSyntaxError("Invalid UUID syntax");
+//   }
+// };
+
+export const myValidator = async <InputType, ErrorType>(
+  schema: any,
+  input: InputType,
+  errorClass: { new (): ErrorType }
+): Promise<ErrorType | undefined> => {
+  return yup
+    .object()
+    .shape(schema)
+    .validate(input, { abortEarly: false })
+    .then((_) => undefined)
+    .catch((err) => Object.assign(new errorClass(), formatError(err)));
 };
 
-export const createUserRules = {
-  username: "required|minLength:4",
-  email: "required|email",
-  password: "required|minLength:4",
-};
-
-export const createCategoryRules = {
-  name: "required|minLength:4",
-  description: "required|minLength:4",
-};
-
-export const createItemRules = {
-  name: "required|minLength:4",
-};
-
-const extendedMessages = {
-  required: "Required Field.",
-  minLength: "Too short.",
-  email: "Invalid Email format.",
-};
-
-export const myValidator = async (
-  input: any,
-  rules: any
-): Promise<MyError[] | undefined> => {
-  const validator = new niv.Validator(input, rules);
-  niv.extendMessages(extendedMessages);
-  validator.bail(false);
-
-  await validator.check();
-
-  const { errors } = validator;
-
-  if (Object.keys(errors).length < 1) return undefined;
-
-  let myErrors: MyError[] = [];
-
-  //formatting niv errors into MyError Type
-  Object.keys(errors).forEach((field) => {
-    (errors[field] as [{ rule: string; message: string }]).forEach((err) => {
-      myErrors.push({
-        field,
-        message: err.message,
-        code: ErrCode.INVAID_INPUT_PARAMETER,
-      });
-    });
+const formatError = (err: any) => {
+  let result: { [key: string]: string[] } = {};
+  err.inner?.forEach((vErr: ValidationError) => {
+    if (vErr.path! in result) {
+      result[vErr.path!].push(vErr.message);
+    } else {
+      result[vErr.path!] = [vErr.message];
+    }
   });
 
-  return myErrors;
+  return result;
 };

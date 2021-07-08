@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -96,7 +97,8 @@ export class Item extends BaseEntity {
   @ManyToOne(() => Category, (category) => category.items, {
     onDelete: "CASCADE",
   })
-  category: Category;
+  @JoinTable({ name: "categoryUuid" })
+  category: Promise<Category>;
 
   @OneToMany(() => CartsItems, (cartItem) => cartItem.item)
   cartConnection: Promise<CartsItems[]>;

@@ -1,83 +1,95 @@
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { getConnection } from "typeorm";
+import { isAuthorized } from "../middlewares";
+import { Category } from "../entity";
+import { ErrCode, Err, OnError } from "../errors";
 import {
   NewCategoryInput,
   UpdateCategoryInput,
   DeleteCategoryInput,
   SuccessResponse,
-  PayloadResponse,
+  CategoryResponse,
+  CreateCategoryResponse,
+  UpdateCategoryResponse,
+  UpdateCategoryErrors,
 } from "../types";
-import { getConnection } from "typeorm";
-import { ErrCode, Err } from "../errors";
-import { Category } from "../entity";
-import { isAuthorized } from "../middlewares";
 import {
-  createCategoryRules,
-  myValidator,
-} from "../utils/validators/myValidator";
+  categoryValidator,
+  createCategoryValidator,
+  updateCategoryValidator,
+} from "../utils/validators";
 
 @Resolver()
 export class CategoryResolver {
   @Query(() => [Category])
   async categories(): Promise<Category[]> {
-    return await Category.find({ relations: ["items"] });
+    return await Category.find();
   }
 
-  @Query(() => PayloadResponse)
-  async category(@Arg("uuid") uuid: string): Promise<PayloadResponse> {
-    try {
-      const category = await Category.findOne({
-        where: { uuid },
-        relations: ["items"],
-      });
-      if (!category)
-        throw new Err(ErrCode.NOT_FOUND, "No Category matches this ID.");
+  @Query(() => CategoryResponse)
+  async category(@Arg("uuid") uuid: string): Promise<CategoryResponse> {
+    // validating uuid syntax
+    const formErrors = await categoryValidator({ uuid });
+    if (formErrors)
+      return {
+        errors: new OnError("INVALID_UUID_SYNTAX", "iNVALID uUID sYNTAX eRROR"),
+      };
 
-      return { payload: category };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+    //find category
+    const category = await Category.findOne({
+      where: { uuid },
+      relations: ["items"],
+    });
+    if (!category)
+      return {
+        errors: new OnError("NOT_FOUND", "No Category available for this uuid"),
+      };
+
+    return { payload: category };
   }
 
-  @Mutation(() => PayloadResponse)
-  @UseMiddleware(isAuthorized(["addCategory"]))
+  @Mutation(() => CreateCategoryResponse)
+  //@UseMiddleware(isAuthorized(["addCategory"]))
   async createCategory(
     @Arg("input") input: NewCategoryInput
-  ): Promise<PayloadResponse> {
-    try {
-      const formErrors = await myValidator(input, createCategoryRules);
-      if (formErrors) return { errors: formErrors };
+  ): Promise<CreateCategoryResponse> {
+    //validating form
+    const formErrors = await createCategoryValidator(input);
+    if (formErrors) return { errors: formErrors };
 
-      return {
-        payload: await Category.create(input).save(),
-      };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+    //save and return
+    return { payload: await Category.create(input).save() };
   }
 
-  @Mutation(() => PayloadResponse)
-  @UseMiddleware(isAuthorized(["updateCategory"]))
+  @Mutation(() => UpdateCategoryResponse)
+  //@UseMiddleware(isAuthorized(["updateCategory"]))
   async updateCategory(
-    @Arg("input") { uuid, fields }: UpdateCategoryInput
-  ): Promise<PayloadResponse> {
-    try {
-      const formErrors = await myValidator(fields, createCategoryRules);
-      if (formErrors) return { errors: formErrors };
+    @Arg("input") input: UpdateCategoryInput
+  ): Promise<UpdateCategoryResponse> {
+    //validate form input
+    const formErrors = await updateCategoryValidator(input);
+    if (formErrors) return { errors: formErrors };
 
-      const exists = await Category.findOne({ where: { uuid } });
-      if (!exists)
-        throw new Err(ErrCode.NOT_FOUND, "No category matches this ID.");
-
-      await getConnection().getRepository(Category).update({ uuid }, fields);
-
-      const category = await Category.findOne({ where: { uuid } });
-
+    // chech if category exists
+    const exists = await Category.findOne({ where: { uuid: input.uuid } });
+    if (!exists)
       return {
-        payload: category,
+        errors: new UpdateCategoryErrors(
+          "NOT_FOUND",
+          "No Category matches this ID.",
+          ["No Category matches this uuid"]
+        ),
       };
-    } catch (err) {
-      return Err.ResponseBuilder(err);
-    }
+
+    //update category
+    await getConnection()
+      .getRepository(Category)
+      .update({ uuid: input.uuid }, input.fields);
+
+    //find and return
+    const category = await Category.findOne({ where: { uuid: input.uuid } });
+
+    return { payload: category! };
   }
 
   @Mutation(() => SuccessResponse)

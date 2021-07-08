@@ -11,16 +11,16 @@ export class NewCategoryInput {
 
 @InputType()
 class updateCategoryFields {
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   name: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   description: string;
 }
 
 @InputType()
 export class UpdateCategoryInput {
-  @Field(() => String, { nullable: false })
+  @Field(() => String)
   uuid: string;
 
   @Field(() => updateCategoryFields)

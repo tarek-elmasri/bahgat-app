@@ -42,7 +42,7 @@ __decorate([
 ], Category.prototype, "updatedAt", void 0);
 __decorate([
     type_graphql_1.Field(() => [_1.Item], { nullable: true }),
-    typeorm_1.OneToMany(() => _1.Item, (item) => item.category),
+    typeorm_1.OneToMany(() => _1.Item, (item) => item.category, { eager: true }),
     __metadata("design:type", Array)
 ], Category.prototype, "items", void 0);
 Category = __decorate([

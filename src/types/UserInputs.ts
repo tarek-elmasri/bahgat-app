@@ -15,10 +15,10 @@ export class RegisterInput {
 
 @InputType()
 export class UpdateUserInput {
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   username: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   email: string;
 }
 

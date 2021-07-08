@@ -71,7 +71,6 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
-    type_graphql_1.Field(),
     typeorm_1.Column(),
     typeorm_1.Index(),
     __metadata("design:type", String)
