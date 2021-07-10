@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CurrentUser = void 0;
+exports.randomInteger = exports.CurrentUser = void 0;
 const type_graphql_1 = require("type-graphql");
 function CurrentUser() {
     return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
@@ -19,4 +19,8 @@ function CurrentUser() {
     }));
 }
 exports.CurrentUser = CurrentUser;
+const randomInteger = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+exports.randomInteger = randomInteger;
 //# sourceMappingURL=test.js.map
