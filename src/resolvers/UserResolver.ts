@@ -20,7 +20,12 @@ import {
   //  InputError,
 } from "../types";
 import { User } from "../entity";
-import { updateSession, isGuest, deleteSession } from "../middlewares";
+import {
+  updateSession,
+  isGuest,
+  deleteSession,
+  isAuthenticated,
+} from "../middlewares";
 import { normalizeEmail, syncCart, updateEntity } from "../utils";
 import { Login, Register } from "../auth";
 import {
@@ -28,7 +33,7 @@ import {
   registerValidator,
   updateMeValidator,
 } from "../utils/validators";
-import { OnError, UnAuthorizedError } from "../errors";
+import { OnError } from "../errors";
 
 /*
 queries:
@@ -75,10 +80,15 @@ export class UserResolver {
         ),
       };
 
-    const cart = await syncCart(user, req); // syncing guest cart with user cart after successful login
+    const { session } = req;
+    // syncing guest cart with user cart after successful login
+    // note that function returns the old cart before updating
+    // to avoid new query to database
+    // as the only needed field is the uuid field of the cart to update
+    // the session and cookies
+    const cart = await syncCart(user, session);
 
     //updating user session and cookies
-    const { session } = req;
     session.cartUuid = cart.uuid;
     await updateSession(session, user, req, res);
 
@@ -118,15 +128,15 @@ export class UserResolver {
     return { payload: new LoginSuccess(user, cart) };
   }
 
-  //TODO add authorization same user or admin
   @Mutation(() => UpdateMeResponse)
+  @UseMiddleware(isAuthenticated)
   async updateMe(
     @Arg("fields", () => UpdateUserInput) fields: UpdateUserInput,
     @Ctx() { req }: MyContext
   ): Promise<UpdateMeResponse> {
     // current user ?
     const { user } = req;
-    if (!user) throw new UnAuthorizedError("Not Logged IN");
+    //if (!user) throw new UnAuthorizedError("Not Logged IN");
 
     //validating the form
     const formErrors = await updateMeValidator(fields);
@@ -135,7 +145,7 @@ export class UserResolver {
     //update user
     const updatedUser = await updateEntity(
       User,
-      { uuid: user.uuid },
+      { uuid: user!.uuid },
       { email: normalizeEmail(fields.email), username: fields.username }
     );
 

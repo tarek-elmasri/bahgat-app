@@ -80,6 +80,6 @@ export class User extends BaseEntity {
 
   @BeforeInsert()
   normalizeEmail() {
-    this.email = this.email.normalize().toLowerCase();
+    this.email = this.email.toLowerCase().normalize();
   }
 }

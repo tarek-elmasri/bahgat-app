@@ -1,13 +1,17 @@
 import { getConnection } from "typeorm";
-import { Cart, CartsItems, User } from "../entity";
-import { Request } from "express";
+import { Cart, CartsItems, Session, User } from "../entity";
 import { Err, ErrCode } from "../errors";
 
-type SyncCartFn = (user: User, req: Request) => Promise<Cart>;
+type SyncCartFn = (user: User, session: Session) => Promise<Cart>;
 
-export const syncCart: SyncCartFn = async (user, req) => {
-  const { session } = req;
+/*
+  this function updates all carts_items cartUuid field of guest cart
+  to the current user cart UUID
+  then deletes the current cart whick will be with no items
+  and returns 
 
+*/
+export const syncCart: SyncCartFn = async (user, session) => {
   const userCart = await Cart.findOne({
     where: { userUuid: user.uuid },
   });

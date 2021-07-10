@@ -5,20 +5,11 @@ import { Field, ObjectType } from "type-graphql";
 @ObjectType()
 export class CreateCategoryErrors implements OnError {
   @Field()
-  code: string = "INVALID_INPUT_PARAMETERS";
+  code: string;
 
   @Field()
-  message: string = "Invalid Input Parameters.";
+  message: string;
 
-  @Field(() => [String], { nullable: true })
-  name?: string[];
-
-  @Field(() => [String], { nullable: true })
-  description?: string[];
-}
-
-@ObjectType()
-export class UpdateCategoryErrors extends InvalidUuidSyntaxError {
   @Field(() => [String], { nullable: true })
   name?: string[];
 
@@ -26,13 +17,24 @@ export class UpdateCategoryErrors extends InvalidUuidSyntaxError {
   description?: string[];
 
   constructor(
-    code: string = "INVALID_INPUT-PARAMETERS",
-    message: string = "Invalid Input parameters",
-    uuid?: string[]
+    code: string = "INVALID_INPUT_PARAMETERS",
+    message: string = "Invalid Input Parameters."
   ) {
-    super(code, message, uuid);
     this.code = code;
     this.message = message;
+  }
+}
+
+@ObjectType()
+export class UpdateCategoryErrors
+  extends CreateCategoryErrors
+  implements InvalidUuidSyntaxError
+{
+  @Field(() => [String], { nullable: true })
+  uuid?: string[];
+
+  constructor(code?: string, message?: string, uuid?: string[]) {
+    super(code, message);
     this.uuid = uuid;
   }
 }
@@ -53,13 +55,4 @@ export class CreateCategoryResponse {
 
   @Field(() => CreateCategoryErrors, { nullable: true })
   errors?: CreateCategoryErrors;
-}
-
-@ObjectType()
-export class CategoryResponse {
-  @Field(() => Category, { nullable: true })
-  payload?: Category;
-
-  @Field(() => OnError, { nullable: true })
-  errors?: OnError;
 }

@@ -1,4 +1,3 @@
-import { InvalidUuidSyntaxError } from "../../errors";
 import * as yup from "yup";
 import { myValidator, uuidV4 } from "./myValidator";
 import {
@@ -19,11 +18,6 @@ const description = yup
   .min(4, "Description is Too Short.");
 
 export const categorySchemaValidators = { name, description };
-
-export const categoryValidator = (input: { uuid: string }) => {
-  const uuidValidator = { uuid: uuidV4 };
-  return myValidator(uuidValidator, input, InvalidUuidSyntaxError);
-};
 
 export const createCategoryValidator = (input: NewCategoryInput) => {
   const validatorSchema = {

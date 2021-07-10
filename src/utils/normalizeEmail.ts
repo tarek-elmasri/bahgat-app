@@ -1,2 +1,2 @@
 export const normalizeEmail = (email: string) =>
-  email.normalize().toLowerCase();
+  email.toLowerCase().normalize();

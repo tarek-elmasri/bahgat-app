@@ -13,8 +13,7 @@ exports.syncCart = void 0;
 const typeorm_1 = require("typeorm");
 const entity_1 = require("../entity");
 const errors_1 = require("../errors");
-const syncCart = (user, req) => __awaiter(void 0, void 0, void 0, function* () {
-    const { session } = req;
+const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* () {
     const userCart = yield entity_1.Cart.findOne({
         where: { userUuid: user.uuid },
     });

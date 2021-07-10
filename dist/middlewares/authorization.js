@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isGuest = exports.isAuthorized = void 0;
+exports.isAuthenticated = exports.isGuest = exports.isAuthorized = void 0;
 const types_1 = require("../types");
 const errors_1 = require("../errors");
 const Errors_1 = require("../errors/Errors");
@@ -34,4 +34,10 @@ const isGuest = ({ context }, next) => {
     return next();
 };
 exports.isGuest = isGuest;
+const isAuthenticated = ({ context }, next) => {
+    if (!context.req.user)
+        throw new errors_1.Err(errors_1.ErrCode.INVALID_ACTION, "Not Logged In.");
+    return next();
+};
+exports.isAuthenticated = isAuthenticated;
 //# sourceMappingURL=authorization.js.map

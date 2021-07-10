@@ -29,6 +29,8 @@ const entity_1 = require("../entity");
 const errors_1 = require("../errors");
 const types_1 = require("../types");
 const validators_1 = require("../utils/validators");
+const apollo_server_express_1 = require("apollo-server-express");
+const utils_1 = require("../utils");
 let CategoryResolver = class CategoryResolver {
     categories() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,20 +39,16 @@ let CategoryResolver = class CategoryResolver {
     }
     category(uuid) {
         return __awaiter(this, void 0, void 0, function* () {
-            const formErrors = yield validators_1.categoryValidator({ uuid });
+            const formErrors = yield validators_1.UuidValidator({ uuid });
             if (formErrors)
-                return {
-                    errors: new errors_1.OnError("INVALID_UUID_SYNTAX", "iNVALID uUID sYNTAX eRROR"),
-                };
+                throw new apollo_server_express_1.ValidationError("Invalid UUID Syntax.");
             const category = yield entity_1.Category.findOne({
                 where: { uuid },
                 relations: ["items"],
             });
             if (!category)
-                return {
-                    errors: new errors_1.OnError("NOT_FOUND", "No Category available for this uuid"),
-                };
-            return { payload: category };
+                return undefined;
+            return category;
         });
     }
     createCategory(input) {
@@ -71,10 +69,7 @@ let CategoryResolver = class CategoryResolver {
                 return {
                     errors: new types_1.UpdateCategoryErrors("NOT_FOUND", "No Category matches this ID.", ["No Category matches this uuid"]),
                 };
-            yield typeorm_1.getConnection()
-                .getRepository(entity_1.Category)
-                .update({ uuid: input.uuid }, input.fields);
-            const category = yield entity_1.Category.findOne({ where: { uuid: input.uuid } });
+            const category = yield utils_1.updateEntity(entity_1.Category, { uuid: input.uuid }, input.fields);
             return { payload: category };
         });
     }
@@ -103,7 +98,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CategoryResolver.prototype, "categories", null);
 __decorate([
-    type_graphql_1.Query(() => types_1.CategoryResponse),
+    type_graphql_1.Query(() => entity_1.Category, { nullable: true }),
     __param(0, type_graphql_1.Arg("uuid")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -118,6 +113,7 @@ __decorate([
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateCategoryResponse),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
@@ -125,7 +121,6 @@ __decorate([
 ], CategoryResolver.prototype, "updateCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["deleteCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),

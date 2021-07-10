@@ -60,49 +60,52 @@ export class newItemInput {
 @InputType()
 class updateItemFields {
   @Field(() => String, { nullable: true })
-  name: string;
+  name?: string;
 
   @Field(() => String, { nullable: true })
-  img: string;
-
-  @Field(() => Int, { nullable: true })
-  price: number;
-
-  @Field(() => Int, { nullable: true })
-  stock: number;
-
-  @Field({ defaultValue: false })
-  infiniteStock: boolean;
-
-  @Field({ defaultValue: false })
-  notifyLowStock: boolean;
-
-  @Field(() => Int, { nullable: true })
-  notifyStockOfQuantity: number;
+  categoryUuid?: string;
 
   @Field(() => String, { nullable: true })
-  patchNo: string;
+  img?: string;
+
+  @Field(() => Int, { nullable: true })
+  price?: number;
+
+  @Field(() => Int, { nullable: true })
+  stock?: number;
+
+  @Field({ defaultValue: false })
+  infiniteStock?: boolean;
+
+  @Field({ defaultValue: false })
+  notifyLowStock?: boolean;
+
+  @Field(() => Int, { nullable: true })
+  notifyStockOfQuantity?: number;
 
   @Field(() => String, { nullable: true })
-  weight: string;
+  patchNo?: string;
+
+  @Field(() => String, { nullable: true })
+  weight?: string;
 
   @Field(() => Int, { nullable: true })
-  costValue: number;
+  costValue?: number;
 
   @Field(() => Int, { nullable: true })
-  discountPrice: number;
+  discountPrice?: number;
 
   @Field({ defaultValue: false })
-  haveDiscount: boolean;
+  haveDiscount?: boolean;
 
   @Field({ defaultValue: false })
-  quantityLimitOnDiscount: boolean;
+  quantityLimitOnDiscount?: boolean;
 
   @Field(() => Int, { nullable: true })
-  maxQuantityOnDiscount: number;
+  maxQuantityOnDiscount?: number;
 
   @Field(() => Date, { nullable: true })
-  discountEndDate: Date;
+  discountEndDate?: Date;
 }
 @InputType()
 export class updateItemInput {

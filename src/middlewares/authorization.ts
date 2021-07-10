@@ -42,3 +42,10 @@ export const isGuest: MiddlewareFn<MyContext> = ({ context }, next) => {
 
   return next();
 };
+
+export const isAuthenticated: MiddlewareFn<MyContext> = ({ context }, next) => {
+  if (!context.req.user)
+    throw new Err(ErrCode.INVALID_ACTION, "Not Logged In.");
+
+  return next();
+};

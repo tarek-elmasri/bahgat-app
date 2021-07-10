@@ -49,8 +49,8 @@ let UserResolver = class UserResolver {
                 return {
                     errors: new errors_1.OnError("INVALID_CREDENTIALS", "Invalid Email or Password."),
                 };
-            const cart = yield utils_1.syncCart(user, req);
             const { session } = req;
+            const cart = yield utils_1.syncCart(user, session);
             session.cartUuid = cart.uuid;
             yield middlewares_1.updateSession(session, user, req, res);
             return { payload: new types_1.LoginSuccess(user, cart) };
@@ -81,8 +81,6 @@ let UserResolver = class UserResolver {
     updateMe(fields, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
-            if (!user)
-                throw new errors_1.UnAuthorizedError("Not Logged IN");
             const formErrors = yield validators_1.updateMeValidator(fields);
             if (formErrors)
                 return { errors: formErrors };
@@ -124,6 +122,7 @@ __decorate([
 ], UserResolver.prototype, "register", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateMeResponse),
+    type_graphql_1.UseMiddleware(middlewares_1.isAuthenticated),
     __param(0, type_graphql_1.Arg("fields", () => types_1.UpdateUserInput)),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),

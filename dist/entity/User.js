@@ -42,7 +42,7 @@ let User = class User extends typeorm_1.BaseEntity {
         this.refresh_token = middlewares_1.createRefreshToken({ userUuid: this.uuid });
     }
     normalizeEmail() {
-        this.email = this.email.normalize().toLowerCase();
+        this.email = this.email.toLowerCase().normalize();
     }
 };
 __decorate([

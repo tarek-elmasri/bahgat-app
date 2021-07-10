@@ -1,3 +1,4 @@
+import { InvalidUuidSyntaxError } from "../../errors";
 import * as yup from "yup";
 import { ValidationError } from "yup";
 
@@ -6,18 +7,10 @@ export const uuidV4 = yup
   .required("UUID is required.")
   .uuid("Invalid UUID Syntax.");
 
-// export const uuidValidator = async (uuid: string) => {
-//   try {
-//     await yup
-//       .object()
-//       .shape({ uuid: uuidV4 })
-//       .validate({ uuid }, { abortEarly: false });
-
-//     return undefined;
-//   } catch (err) {
-//     throw new UuidInvalidSyntaxError("Invalid UUID syntax");
-//   }
-// };
+export const UuidValidator = (input: { uuid: string }) => {
+  const uuidValidator = { uuid: uuidV4 };
+  return myValidator(uuidValidator, input, InvalidUuidSyntaxError);
+};
 
 export const myValidator = async <InputType, ErrorType>(
   schema: any,

@@ -99,6 +99,10 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
+], updateItemFields.prototype, "categoryUuid", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", String)
 ], updateItemFields.prototype, "img", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),

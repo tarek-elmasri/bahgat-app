@@ -2,22 +2,23 @@ import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { getConnection } from "typeorm";
 import { isAuthorized } from "../middlewares";
 import { Category } from "../entity";
-import { ErrCode, Err, OnError } from "../errors";
+import { ErrCode, Err } from "../errors";
 import {
   NewCategoryInput,
   UpdateCategoryInput,
   DeleteCategoryInput,
   SuccessResponse,
-  CategoryResponse,
   CreateCategoryResponse,
   UpdateCategoryResponse,
   UpdateCategoryErrors,
 } from "../types";
 import {
-  categoryValidator,
   createCategoryValidator,
   updateCategoryValidator,
+  UuidValidator,
 } from "../utils/validators";
+import { ValidationError } from "apollo-server-express";
+import { updateEntity } from "../utils";
 
 @Resolver()
 export class CategoryResolver {
@@ -26,26 +27,21 @@ export class CategoryResolver {
     return await Category.find();
   }
 
-  @Query(() => CategoryResponse)
-  async category(@Arg("uuid") uuid: string): Promise<CategoryResponse> {
+  @Query(() => Category, { nullable: true })
+  async category(@Arg("uuid") uuid: string): Promise<Category | undefined> {
     // validating uuid syntax
-    const formErrors = await categoryValidator({ uuid });
-    if (formErrors)
-      return {
-        errors: new OnError("INVALID_UUID_SYNTAX", "iNVALID uUID sYNTAX eRROR"),
-      };
+    const formErrors = await UuidValidator({ uuid });
+    if (formErrors) throw new ValidationError("Invalid UUID Syntax.");
 
     //find category
     const category = await Category.findOne({
       where: { uuid },
       relations: ["items"],
     });
-    if (!category)
-      return {
-        errors: new OnError("NOT_FOUND", "No Category available for this uuid"),
-      };
 
-    return { payload: category };
+    if (!category) return undefined;
+
+    return category;
   }
 
   @Mutation(() => CreateCategoryResponse)
@@ -62,7 +58,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => UpdateCategoryResponse)
-  //@UseMiddleware(isAuthorized(["updateCategory"]))
+  @UseMiddleware(isAuthorized(["updateCategory"]))
   async updateCategory(
     @Arg("input") input: UpdateCategoryInput
   ): Promise<UpdateCategoryResponse> {
@@ -82,24 +78,24 @@ export class CategoryResolver {
       };
 
     //update category
-    await getConnection()
-      .getRepository(Category)
-      .update({ uuid: input.uuid }, input.fields);
-
-    //find and return
-    const category = await Category.findOne({ where: { uuid: input.uuid } });
+    const category = await updateEntity(
+      Category,
+      { uuid: input.uuid },
+      input.fields
+    );
 
     return { payload: category! };
   }
 
+  // TODO: implement new response structure
   @Mutation(() => SuccessResponse)
-  @UseMiddleware(isAuthorized(["deleteCategory"]))
+  //@UseMiddleware(isAuthorized(["deleteCategory"]))
   async deleteCategory(
     @Arg("input") { uuid, saveDelete }: DeleteCategoryInput
   ): Promise<SuccessResponse> {
     try {
       if (saveDelete) {
-        //check if category have any chocolates
+        //check if category have any items
       }
 
       const result = await getConnection()
