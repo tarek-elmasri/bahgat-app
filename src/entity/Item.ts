@@ -18,7 +18,7 @@ import { Cart, CartsItems, Category } from "./";
 export class Item extends BaseEntity {
   @Field(() => String)
   @PrimaryGeneratedColumn("uuid")
-  uuid: string;
+  id: string;
 
   @Field()
   @Column("varchar")
@@ -83,7 +83,7 @@ export class Item extends BaseEntity {
 
   @Field()
   @Column()
-  categoryUuid: string;
+  categoryId: string;
 
   @Field(() => Date)
   @CreateDateColumn()
@@ -97,7 +97,7 @@ export class Item extends BaseEntity {
   @ManyToOne(() => Category, (category) => category.items, {
     onDelete: "CASCADE",
   })
-  @JoinTable({ name: "categoryUuid" })
+  @JoinTable({ name: "categoryId" })
   category: Promise<Category>;
 
   @OneToMany(() => CartsItems, (cartItem) => cartItem.item)
@@ -106,6 +106,6 @@ export class Item extends BaseEntity {
   //useless -> to be deleted
   @Field(() => [Cart], { nullable: true })
   carts(@Ctx() { cartsLoader }: MyContext) {
-    return cartsLoader.load(this.uuid);
+    return cartsLoader.load(this.id);
   }
 }

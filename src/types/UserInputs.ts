@@ -1,8 +1,8 @@
-import { Field, InputType } from "type-graphql";
+import { Field, InputType, Int } from "type-graphql";
 import { Role } from "./Role";
 
 @InputType()
-export class RegisterInput {
+export class CreateRegistrationInput {
   @Field()
   username: string;
 
@@ -11,6 +11,15 @@ export class RegisterInput {
 
   @Field()
   password: string;
+
+  @Field()
+  phoneNo: number;
+}
+
+@InputType()
+export class RegisterInput extends CreateRegistrationInput {
+  @Field(() => Int)
+  OTP: number;
 }
 
 @InputType()
@@ -20,6 +29,9 @@ export class UpdateUserInput {
 
   @Field(() => String)
   email: string;
+
+  @Field()
+  phoneNo: number;
 }
 
 @InputType()
@@ -67,7 +79,7 @@ class PanelUpdateUserProperties {
 @InputType()
 export class PanelUpdateUserInput {
   @Field(() => String)
-  uuid: string;
+  id: string;
 
   @Field(() => PanelUpdateUserProperties)
   fields: PanelUpdateUserProperties;
@@ -77,10 +89,27 @@ export class PanelUpdateUserInput {
 }
 
 @InputType()
+export class CreateLoginInput {
+  @Field()
+  email: string;
+
+  @Field()
+  password: string;
+
+  @Field()
+  phoneNo: number;
+}
+@InputType()
 export class LoginInput {
   @Field(() => String)
   email: string;
 
   @Field(() => String)
   password: string;
+
+  @Field()
+  phoneNo: number;
+
+  @Field(() => Int)
+  OTP: number;
 }

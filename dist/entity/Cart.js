@@ -18,11 +18,11 @@ let Cart = class Cart extends typeorm_1.BaseEntity {
 __decorate([
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
-], Cart.prototype, "uuid", void 0);
+], Cart.prototype, "id", void 0);
 __decorate([
     typeorm_1.Column({ nullable: true }),
     __metadata("design:type", String)
-], Cart.prototype, "userUuid", void 0);
+], Cart.prototype, "userId", void 0);
 __decorate([
     type_graphql_1.Field(() => [_1.CartsItems]),
     typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.cart, { eager: true }),

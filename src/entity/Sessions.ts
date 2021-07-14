@@ -6,7 +6,7 @@ export class Session extends BaseEntity {
   id: string;
 
   @Column()
-  cartUuid: string;
+  cartId: string;
 
   @Column({ nullable: true })
   access_token?: string;

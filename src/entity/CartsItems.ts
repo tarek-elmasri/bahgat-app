@@ -13,16 +13,16 @@ import { Cart, Item } from "./";
 @ObjectType()
 export class CartsItems extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
-  uuid: string;
+  id: string;
 
   //TODO delete unneccessry fields
   //@Field()
   @Column()
-  cartUuid: string;
+  cartId: string;
 
   //@Field()
   @Column()
-  itemUuid: string;
+  itemId: string;
 
   @Field(() => Int)
   @Column("int")
@@ -30,10 +30,10 @@ export class CartsItems extends BaseEntity {
 
   @Field(() => Item)
   @ManyToOne(() => Item, (item) => item.cartConnection, { primary: true })
-  @JoinTable({ name: "itemUuid" })
+  @JoinTable({ name: "itemId" })
   item: Promise<Item>;
 
   @ManyToOne(() => Cart, (cart) => cart.cartItems, { primary: true })
-  @JoinTable({ name: "cartUuid" })
+  @JoinTable({ name: "cartId" })
   cart: Promise<Cart>;
 }

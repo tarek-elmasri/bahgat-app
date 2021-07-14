@@ -81,7 +81,7 @@ let newItemInput = class newItemInput {
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], newItemInput.prototype, "categoryUuid", void 0);
+], newItemInput.prototype, "categoryId", void 0);
 __decorate([
     type_graphql_1.Field(() => newItemFields),
     __metadata("design:type", newItemFields)
@@ -99,7 +99,7 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
-], updateItemFields.prototype, "categoryUuid", void 0);
+], updateItemFields.prototype, "categoryId", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", String)
@@ -164,7 +164,7 @@ let updateItemInput = class updateItemInput {
 __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
-], updateItemInput.prototype, "uuid", void 0);
+], updateItemInput.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => updateItemFields),
     __metadata("design:type", updateItemFields)

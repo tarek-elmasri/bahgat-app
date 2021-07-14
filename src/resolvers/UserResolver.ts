@@ -1,3 +1,6 @@
+import { PhoneVerification, User } from "../entity";
+import { normalizeEmail, syncCart, updateEntity } from "../utils";
+import { OnError } from "../errors";
 import {
   Arg,
   Ctx,
@@ -17,23 +20,26 @@ import {
   LoginSuccess,
   RegisterErrors,
   UpdateMeResponse,
-  //  InputError,
+  CreateRegistrationInput,
+  CreateRegisterationErrors,
+  CreateRegisterationResponse,
+  UpdateMeErrors,
+  CreateLoginResponse,
+  CreateLoginInput,
 } from "../types";
-import { User } from "../entity";
 import {
   updateSession,
   isGuest,
   deleteSession,
   isAuthenticated,
 } from "../middlewares";
-import { normalizeEmail, syncCart, updateEntity } from "../utils";
-import { Login, Register } from "../auth";
 import {
-  loginValidator,
-  registerValidator,
-  updateMeValidator,
+  createLoginSchema,
+  createRegistrationSchema,
+  loginSchema,
+  registerSchema,
+  updateMeSchema,
 } from "../utils/validators";
-import { OnError } from "../errors";
 
 /*
 queries:
@@ -54,6 +60,29 @@ export class UserResolver {
     return { user, cart };
   }
 
+  @Mutation(() => CreateLoginResponse)
+  @UseMiddleware(isGuest)
+  async createLogin(
+    @Arg("input") input: CreateLoginInput
+  ): Promise<CreateLoginResponse> {
+    const userAttempt = User.create(input).normalizeEmail();
+    await userAttempt.validateInput(createLoginSchema);
+    const formErrors = userAttempt.getErrors(OnError);
+    if (formErrors) return { errors: formErrors };
+
+    const user = await userAttempt.auth();
+    if (!user)
+      return {
+        errors: new OnError("INVALID_CREDENTIALS", "Invalid Email or Password"),
+      };
+
+    const otpResponse = await user.sendOTP();
+    if (otpResponse.code !== "1")
+      return { errors: new OnError(otpResponse.code, otpResponse.message) };
+
+    return { payload: otpResponse.message };
+  }
+
   @Mutation(() => LoginResponse)
   @UseMiddleware(isGuest)
   async login(
@@ -61,38 +90,84 @@ export class UserResolver {
     @Ctx() { req, res }: MyContext
   ): Promise<LoginResponse> {
     //validate input
-    const formErrors = await loginValidator(credentials);
-    if (formErrors)
-      return {
-        errors: new OnError(
-          "INVALID_CREDENTIALS",
-          "Invalid Email or Password."
-        ),
-      };
+    const userAttempt = User.create(credentials).setOTP(credentials.OTP);
+    const formErrors = (await userAttempt.validateInput(loginSchema)).getErrors(
+      OnError
+    );
+
+    if (formErrors) {
+      formErrors.code = "INVALID_CREDENTIALS";
+      formErrors.message = "Invalid Email or Password";
+      return { errors: formErrors };
+    }
 
     //Authentication
-    const user = await Login(credentials);
+    const user = await userAttempt.auth({ validateOTP: true });
     if (!user)
       return {
         errors: new OnError(
           "INVALID_CREDENTIALS",
-          "Invalid Email or Password."
+          "Invalid credentials or OTP."
         ),
       };
 
-    const { session } = req;
     // syncing guest cart with user cart after successful login
     // note that function returns the old cart before updating
     // to avoid new query to database
-    // as the only needed field is the uuid field of the cart to update
+    // as the only needed field is the if field of the cart to update
     // the session and cookies
+    const { session } = req;
     const cart = await syncCart(user, session);
-
     //updating user session and cookies
-    session.cartUuid = cart.uuid;
+    session.cartId = cart.id;
     await updateSession(session, user, req, res);
 
     return { payload: new LoginSuccess(user, cart) };
+  }
+
+  @Mutation(() => CreateRegisterationResponse)
+  //@UseMiddleware(isGuest)
+  async createRegistration(
+    @Arg("input") input: CreateRegistrationInput
+  ): Promise<CreateRegisterationResponse> {
+    // input validations
+    const userAttempt = User.create(input).normalizeEmail();
+    await userAttempt.validateInput(createRegistrationSchema);
+    await userAttempt.validateUniqueness();
+    const formErrors = userAttempt.getErrors(CreateRegisterationErrors);
+    if (formErrors) return { errors: formErrors };
+
+    // check if previus requests wea sent.
+    let phoneVerification = await PhoneVerification.findOne({
+      where: { phoneNo: input.phoneNo },
+    });
+    // excluding resend OTP if short intervals between requests.
+    if (phoneVerification && phoneVerification.isShortRequest())
+      return {
+        errors: new CreateRegisterationErrors(
+          "SHORT_TIME_REQUEST",
+          "Interval between OTP requests must exceed 20 secsonds."
+        ),
+      };
+
+    // create phoneVerification for new requests
+    if (!phoneVerification) {
+      phoneVerification = PhoneVerification.create({
+        phoneNo: input.phoneNo,
+      });
+    }
+    //generating OTP and save or resave model
+    await phoneVerification.generateOTP().save();
+    // sending otp
+    const otpResponse = await phoneVerification.sendOTP();
+    if (otpResponse.code !== "1")
+      return {
+        errors: new CreateRegisterationErrors(
+          otpResponse.code,
+          otpResponse.message
+        ),
+      };
+    return { payload: "OTP is successfully sent to phone no." };
   }
 
   @Mutation(() => RegisterResponse)
@@ -102,25 +177,41 @@ export class UserResolver {
     @Ctx() { req, res }: MyContext
   ): Promise<RegisterResponse> {
     // validaate input fields
-    const formErrors = await registerValidator(input);
+    const user = User.create(input).normalizeEmail().setOTP(input.OTP);
+    await user.validateInput(registerSchema);
+    await user.validateUniqueness();
+    const formErrors = user.getErrors(RegisterErrors);
     if (formErrors) return { errors: formErrors };
 
-    // check if email already exists in db
-    let user = await User.findOne({
-      where: { email: normalizeEmail(input.email) },
+    // find the phone verification for otp
+    const verifiedPhone = await PhoneVerification.findOne({
+      where: { phoneNo: input.phoneNo },
     });
-    if (user)
+    if (!verifiedPhone)
       return {
-        errors: new RegisterErrors("EMAIL_ALREADY_EXISTS", [
-          "Email already exists.",
+        errors: new RegisterErrors("PHONE_NOT_VERIFIED", undefined, [
+          "Phone not verified, Call createRegisteration first.",
         ]),
       };
 
-    user = await Register(input); // create new user in database
+    // isValidOtp validates OTP match and not expired
+    if (!verifiedPhone.isValidOTP(input.OTP))
+      return {
+        errors: new RegisterErrors(
+          "INVALID_OTP",
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          ["Invalid or expired OTP."]
+        ),
+      };
 
+    // hash password and save.
+    await user.register();
     // update current session cart userId field from null to the new registered user
     const { session, cart } = req;
-    cart.userUuid = user.uuid; //linking the current cart in session with the new user
+    cart.userId = user.id; //linking the current cart in session with the new user
     await cart.save();
     //updating session data to have the new userId and refresh token
     await updateSession(session, user, req, res);
@@ -131,7 +222,7 @@ export class UserResolver {
   @Mutation(() => UpdateMeResponse)
   @UseMiddleware(isAuthenticated)
   async updateMe(
-    @Arg("fields", () => UpdateUserInput) fields: UpdateUserInput,
+    @Arg("input", () => UpdateUserInput) input: UpdateUserInput,
     @Ctx() { req }: MyContext
   ): Promise<UpdateMeResponse> {
     // current user ?
@@ -139,14 +230,22 @@ export class UserResolver {
     //if (!user) throw new UnAuthorizedError("Not Logged IN");
 
     //validating the form
-    const formErrors = await updateMeValidator(fields);
+    const formErrors = (
+      await (
+        await User.create(input).validateInput(updateMeSchema)
+      ).validateUniqueness({ user: user! })
+    ).getErrors(UpdateMeErrors);
+
     if (formErrors) return { errors: formErrors };
 
     //update user
     const updatedUser = await updateEntity(
       User,
-      { uuid: user!.uuid },
-      { email: normalizeEmail(fields.email), username: fields.username }
+      { id: user!.id },
+      {
+        ...input,
+        email: normalizeEmail(input.email),
+      }
     );
 
     return { payload: updatedUser! };

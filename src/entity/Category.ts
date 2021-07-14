@@ -15,7 +15,7 @@ import { Item } from "./";
 export class Category extends BaseEntity {
   @Field(() => String)
   @PrimaryGeneratedColumn("uuid")
-  uuid: string;
+  id: string;
 
   @Field()
   @Column("varchar", { nullable: false })

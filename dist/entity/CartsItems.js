@@ -18,15 +18,15 @@ let CartsItems = class CartsItems extends typeorm_1.BaseEntity {
 __decorate([
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
-], CartsItems.prototype, "uuid", void 0);
+], CartsItems.prototype, "id", void 0);
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
-], CartsItems.prototype, "cartUuid", void 0);
+], CartsItems.prototype, "cartId", void 0);
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
-], CartsItems.prototype, "itemUuid", void 0);
+], CartsItems.prototype, "itemId", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int),
     typeorm_1.Column("int"),
@@ -35,12 +35,12 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => _1.Item),
     typeorm_1.ManyToOne(() => _1.Item, (item) => item.cartConnection, { primary: true }),
-    typeorm_1.JoinTable({ name: "itemUuid" }),
+    typeorm_1.JoinTable({ name: "itemId" }),
     __metadata("design:type", Promise)
 ], CartsItems.prototype, "item", void 0);
 __decorate([
     typeorm_1.ManyToOne(() => _1.Cart, (cart) => cart.cartItems, { primary: true }),
-    typeorm_1.JoinTable({ name: "cartUuid" }),
+    typeorm_1.JoinTable({ name: "cartId" }),
     __metadata("design:type", Promise)
 ], CartsItems.prototype, "cart", void 0);
 CartsItems = __decorate([

@@ -12,7 +12,7 @@ export const batchItems: BatchFn = async (cartIds: readonly string[]) => {
       },
     },
     where: {
-      cartUuid: In(cartIds as string[]),
+      cartId: In(cartIds as string[]),
     },
   });
 
@@ -30,14 +30,14 @@ export const batchItems: BatchFn = async (cartIds: readonly string[]) => {
   const cartIdToItem: { [key: string]: Item[] } = {};
 
   cartItems.forEach((ci) => {
-    if (ci.cartUuid in cartIdToItem) {
-      cartIdToItem[ci.cartUuid].push((ci as any).__item__);
+    if (ci.cartId in cartIdToItem) {
+      cartIdToItem[ci.cartId].push((ci as any).__item__);
     } else {
-      cartIdToItem[ci.cartUuid] = [(ci as any).__item__];
+      cartIdToItem[ci.cartId] = [(ci as any).__item__];
     }
   });
 
-  return cartIds.map((cartUuid) => cartIdToItem[cartUuid]);
+  return cartIds.map((cartId) => cartIdToItem[cartId]);
 };
 
 export const itemLoader = () => new DataLoader<string, Item[]>(batchItems);

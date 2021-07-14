@@ -15,7 +15,7 @@ const entity_1 = require("../entity");
 const errors_1 = require("../errors");
 const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* () {
     const userCart = yield entity_1.Cart.findOne({
-        where: { userUuid: user.uuid },
+        where: { userId: user.id },
     });
     if (!userCart)
         throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "no cart found for this user, .. internal error");
@@ -23,14 +23,14 @@ const syncCart = (user, session) => __awaiter(void 0, void 0, void 0, function* 
         .getRepository(entity_1.CartsItems)
         .createQueryBuilder()
         .update()
-        .set({ cartUuid: userCart.uuid })
-        .where(`cartUuid = :cartUuid`, { cartUuid: session.cartUuid })
+        .set({ cartId: userCart.id })
+        .where(`cartId = :cartId`, { cartId: session.cartId })
         .execute();
     yield typeorm_1.getConnection()
         .createQueryBuilder()
         .delete()
         .from(entity_1.Cart)
-        .where("uuid = :uuid", { uuid: session.cartUuid })
+        .where("id = :id", { id: session.cartId })
         .execute();
     return userCart;
 });

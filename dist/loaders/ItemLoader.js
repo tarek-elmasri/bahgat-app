@@ -25,19 +25,19 @@ const batchItems = (cartIds) => __awaiter(void 0, void 0, void 0, function* () {
             },
         },
         where: {
-            cartUuid: typeorm_1.In(cartIds),
+            cartId: typeorm_1.In(cartIds),
         },
     });
     const cartIdToItem = {};
     cartItems.forEach((ci) => {
-        if (ci.cartUuid in cartIdToItem) {
-            cartIdToItem[ci.cartUuid].push(ci.__item__);
+        if (ci.cartId in cartIdToItem) {
+            cartIdToItem[ci.cartId].push(ci.__item__);
         }
         else {
-            cartIdToItem[ci.cartUuid] = [ci.__item__];
+            cartIdToItem[ci.cartId] = [ci.__item__];
         }
     });
-    return cartIds.map((cartUuid) => cartIdToItem[cartUuid]);
+    return cartIds.map((cartId) => cartIdToItem[cartId]);
 });
 exports.batchItems = batchItems;
 const itemLoader = () => new dataloader_1.default(exports.batchItems);

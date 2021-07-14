@@ -19,7 +19,7 @@ __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
-], Category.prototype, "uuid", void 0);
+], Category.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column("varchar", { nullable: false }),

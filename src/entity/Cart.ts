@@ -13,13 +13,13 @@ import { CartsItems } from "./";
 export class Cart extends BaseEntity {
   //@Field()
   @PrimaryGeneratedColumn("uuid")
-  uuid: string;
+  id: string;
 
   // expted not need
   //TODO test
   //@Field(() => String, { nullable: true })
   @Column({ nullable: true })
-  userUuid?: string;
+  userId?: string;
 
   @Field(() => [CartsItems])
   @OneToMany(() => CartsItems, (cartItem) => cartItem.cart, { eager: true })

@@ -1,11 +1,6 @@
 import * as yup from "yup";
 import { myValidator, uuidV4 } from "./myValidator";
-import {
-  NewCategoryInput,
-  CreateCategoryErrors,
-  UpdateCategoryInput,
-  UpdateCategoryErrors,
-} from "../../types";
+import { NewCategoryInput, UpdateCategoryInput } from "../../types";
 
 const name = yup
   .string()
@@ -24,18 +19,18 @@ export const createCategoryValidator = (input: NewCategoryInput) => {
     name,
     description,
   };
-  return myValidator(validatorSchema, input, CreateCategoryErrors);
+  return myValidator(validatorSchema, input /*CreateCategoryErrors*/);
 };
 
 export const updateCategoryValidator = (input: UpdateCategoryInput) => {
   const validatorSchema = {
-    uuid: uuidV4,
+    id: uuidV4,
     name,
     description,
   };
   return myValidator(
     validatorSchema,
-    { uuid: input.uuid, ...input.fields },
-    UpdateCategoryErrors
+    { id: input.id, ...input.fields }
+    //UpdateCategoryErrors
   );
 };

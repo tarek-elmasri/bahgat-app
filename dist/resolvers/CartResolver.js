@@ -32,7 +32,7 @@ let CartResolver = class CartResolver {
             try {
                 return {
                     payload: yield entity_1.Cart.findOne({
-                        where: { uuid: req.session.cartUuid },
+                        where: { uuid: req.session.cartId },
                     }),
                 };
             }
@@ -41,15 +41,15 @@ let CartResolver = class CartResolver {
             }
         });
     }
-    addItemToCart(itemUuid, quantity, { req }) {
+    addItemToCart(itemId, quantity, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const item = yield entity_1.Item.findOne({ where: { uuid: itemUuid } });
+                const item = yield entity_1.Item.findOne({ where: { id: itemId } });
                 if (!item)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No Item found for this ID.");
                 yield entity_1.CartsItems.create({
-                    cartUuid: req.session.cartUuid,
-                    itemUuid,
+                    cartId: req.session.cartId,
+                    itemId,
                     quantity,
                 }).save();
                 return { payload: item };
@@ -69,7 +69,7 @@ __decorate([
 ], CartResolver.prototype, "myCart", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.PayloadResponse),
-    __param(0, type_graphql_1.Arg("itemUuid")),
+    __param(0, type_graphql_1.Arg("itemId")),
     __param(1, type_graphql_1.Arg("quantity")),
     __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),

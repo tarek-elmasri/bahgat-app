@@ -11,7 +11,7 @@ type mwFn = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 // }
 interface MyCookie {
   id: string; //session id in database
-  cartUuid: string;
+  cartId: string;
   access_token?: string;
   refresh_token?: string;
 }
@@ -82,7 +82,7 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
     console.log("successful decoding of access token");
     // successfull accessToken
     user = await User.findOne({
-      where: { uuid: payload.userUuid },
+      where: { id: payload.userId },
     });
     if (user) {
       console.log("found user after decoding");
@@ -114,8 +114,8 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   next();
 };
 
-const loadCart = async (uuid: string) => {
-  const cart = await Cart.findOne({ where: { uuid } });
+const loadCart = async (id: string) => {
+  const cart = await Cart.findOne({ where: { id } });
   if (!cart) throw new Error("internal error , no cart");
 
   return cart;
@@ -124,14 +124,14 @@ const loadCart = async (uuid: string) => {
 const setSession: setSessionFn = async ({ session, user, cart, req }) => {
   req.session = session;
   req.user = user;
-  req.cart = cart || (await loadCart(session.cartUuid));
+  req.cart = cart || (await loadCart(session.cartId));
 };
 
 const createSession = async (req: Request, res: Response) => {
   //create new session and cart cart
   const cart = await Cart.create().save();
   const session = await Session.create({
-    cartUuid: cart.uuid,
+    cartId: cart.id,
   }).save();
   await setSession({ req, session, cart });
   setCookie(session, res);
@@ -141,7 +141,7 @@ const createSession = async (req: Request, res: Response) => {
 const setCookie = (session: Session, res: Response) => {
   res.cookie("sid", {
     id: session.id,
-    cartUuid: session.cartUuid,
+    cartId: session.cartId,
     access_token: session.access_token,
     refresh_token: session.refresh_token,
   });
@@ -168,7 +168,7 @@ export const updateSession: UpdateSessionFn = async (
   req,
   res
 ) => {
-  session.access_token = createAccessToken({ userUuid: user.uuid });
+  session.access_token = createAccessToken({ userId: user.id });
   session.refresh_token = user.refresh_token;
   await session.save();
   await setSession({ session, user, req });

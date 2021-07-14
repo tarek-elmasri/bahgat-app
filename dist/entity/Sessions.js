@@ -20,7 +20,7 @@ __decorate([
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
-], Session.prototype, "cartUuid", void 0);
+], Session.prototype, "cartId", void 0);
 __decorate([
     typeorm_1.Column({ nullable: true }),
     __metadata("design:type", String)

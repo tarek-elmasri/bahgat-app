@@ -1,4 +1,4 @@
-import { ValidationError } from "apollo-server-express";
+//import { ValidationError } from "apollo-server-express";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { Item, Category } from "../entity";
 import { updateEntity } from "../utils";
@@ -13,11 +13,11 @@ import {
   UpdateItemResponse,
 } from "../types";
 //import { isAuthorized } from "../middlewares";
-import {
-  UuidValidator,
-  createItemValidator,
-  updateItemValidator,
-} from "../utils/validators";
+// import {
+//   //UuidValidator,
+//   createItemValidator,
+//   updateItemValidator,
+// } from "../utils/validators";
 
 @Resolver()
 export class ItemResolver {
@@ -27,12 +27,12 @@ export class ItemResolver {
   }
 
   @Query(() => Item, { nullable: true })
-  async item(@Arg("uuid") uuid: string): Promise<Item | undefined> {
-    const uuidError = await UuidValidator({ uuid });
-    if (uuidError) throw new ValidationError("Invalid UUID Syntax.");
+  async item(@Arg("id") id: string): Promise<Item | undefined> {
+    // const uuidError = await UuidValidator({ id });
+    // if (uuidError) throw new ValidationError("Invalid UUID Syntax.");
 
     const item = await Item.findOne({
-      where: { uuid },
+      where: { id },
       relations: ["category"],
     });
 
@@ -44,13 +44,13 @@ export class ItemResolver {
   async createItem(
     @Arg("input") input: newItemInput
   ): Promise<CreateItemResponse> {
-    //validating input form
-    const formErrors = await createItemValidator(input);
-    if (formErrors) return { errors: formErrors };
+    // //validating input form
+    // const formErrors = await createItemValidator(input);
+    // if (formErrors) return { errors: formErrors };
 
     //make sure category for item exists
     const category = await Category.findOne({
-      where: { uuid: input.categoryUuid },
+      where: { id: input.categoryId },
     });
 
     if (!category)
@@ -62,7 +62,7 @@ export class ItemResolver {
 
     return {
       payload: await Item.create({
-        categoryUuid: input.categoryUuid,
+        categoryId: input.categoryId,
         ...input.fields,
       }).save(),
     };
@@ -74,12 +74,12 @@ export class ItemResolver {
     @Arg("input") input: updateItemInput
   ): Promise<UpdateItemResponse> {
     //validating form
-    const formErrors = await updateItemValidator(input);
-    if (formErrors) return { errors: formErrors };
+    // const formErrors = await updateItemValidator(input);
+    // if (formErrors) return { errors: formErrors };
 
-    const { uuid, fields } = input;
+    const { id, fields } = input;
     // check if item already exists
-    const item = await Item.findOne({ where: { uuid } });
+    const item = await Item.findOne({ where: { id } });
     if (!item)
       return {
         errors: new UpdateItemErrors("NOT_FOUND", "No Itemf matches this ID.", [
@@ -88,9 +88,9 @@ export class ItemResolver {
       };
 
     // changing category ? check category exists
-    if (fields.categoryUuid) {
+    if (fields.categoryId) {
       const targetCategory = await Category.findOne({
-        where: { uuid: fields.categoryUuid },
+        where: { id: fields.categoryId },
       });
       if (!targetCategory)
         return {
@@ -103,7 +103,7 @@ export class ItemResolver {
         };
     }
     //update
-    const updatedItem = await updateEntity(Item, { uuid }, fields);
+    const updatedItem = await updateEntity(Item, { id }, fields);
 
     return {
       payload: updatedItem,
@@ -112,9 +112,9 @@ export class ItemResolver {
 
   @Mutation(() => SuccessResponse)
   //@UseMiddleware(isAuthorized(["deleteItem"]))
-  async deleteItem(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
+  async deleteItem(@Arg("id") id: string): Promise<SuccessResponse> {
     try {
-      const deleted = await Item.delete({ uuid });
+      const deleted = await Item.delete({ id });
 
       if (deleted.affected! < 1)
         throw new Err(ErrCode.NOT_FOUND, "No Result matches this ID.");

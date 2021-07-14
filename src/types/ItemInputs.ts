@@ -51,7 +51,7 @@ class newItemFields {
 @InputType()
 export class newItemInput {
   @Field()
-  categoryUuid: string;
+  categoryId: string;
 
   @Field(() => newItemFields)
   fields: newItemFields;
@@ -63,7 +63,7 @@ class updateItemFields {
   name?: string;
 
   @Field(() => String, { nullable: true })
-  categoryUuid?: string;
+  categoryId?: string;
 
   @Field(() => String, { nullable: true })
   img?: string;
@@ -110,7 +110,7 @@ class updateItemFields {
 @InputType()
 export class updateItemInput {
   @Field(() => String)
-  uuid: string;
+  id: string;
 
   @Field(() => updateItemFields)
   fields: updateItemFields;

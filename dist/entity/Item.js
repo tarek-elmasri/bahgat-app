@@ -18,14 +18,14 @@ const typeorm_1 = require("typeorm");
 const _1 = require("./");
 let Item = class Item extends typeorm_1.BaseEntity {
     carts({ cartsLoader }) {
-        return cartsLoader.load(this.uuid);
+        return cartsLoader.load(this.id);
     }
 };
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.PrimaryGeneratedColumn("uuid"),
     __metadata("design:type", String)
-], Item.prototype, "uuid", void 0);
+], Item.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column("varchar"),
@@ -105,7 +105,7 @@ __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", String)
-], Item.prototype, "categoryUuid", void 0);
+], Item.prototype, "categoryId", void 0);
 __decorate([
     type_graphql_1.Field(() => Date),
     typeorm_1.CreateDateColumn(),
@@ -121,7 +121,7 @@ __decorate([
     typeorm_1.ManyToOne(() => _1.Category, (category) => category.items, {
         onDelete: "CASCADE",
     }),
-    typeorm_1.JoinTable({ name: "categoryUuid" }),
+    typeorm_1.JoinTable({ name: "categoryId" }),
     __metadata("design:type", Promise)
 ], Item.prototype, "category", void 0);
 __decorate([

@@ -21,7 +21,7 @@ class updateCategoryFields {
 @InputType()
 export class UpdateCategoryInput {
   @Field(() => String)
-  uuid: string;
+  id: string;
 
   @Field(() => updateCategoryFields)
   fields: updateCategoryFields;
@@ -30,7 +30,7 @@ export class UpdateCategoryInput {
 @InputType()
 export class DeleteCategoryInput {
   @Field()
-  uuid: string;
+  id: string;
 
   @Field(() => Boolean, { defaultValue: true })
   saveDelete: boolean;

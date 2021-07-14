@@ -31,11 +31,11 @@ export class UpdateCategoryErrors
   implements InvalidUuidSyntaxError
 {
   @Field(() => [String], { nullable: true })
-  uuid?: string[];
+  id?: string[];
 
-  constructor(code?: string, message?: string, uuid?: string[]) {
+  constructor(code?: string, message?: string, id?: string[]) {
     super(code, message);
-    this.uuid = uuid;
+    this.id = id;
   }
 }
 

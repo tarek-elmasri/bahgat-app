@@ -28,8 +28,6 @@ const middlewares_1 = require("../middlewares");
 const entity_1 = require("../entity");
 const errors_1 = require("../errors");
 const types_1 = require("../types");
-const validators_1 = require("../utils/validators");
-const apollo_server_express_1 = require("apollo-server-express");
 const utils_1 = require("../utils");
 let CategoryResolver = class CategoryResolver {
     categories() {
@@ -37,13 +35,10 @@ let CategoryResolver = class CategoryResolver {
             return yield entity_1.Category.find();
         });
     }
-    category(uuid) {
+    category(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const formErrors = yield validators_1.UuidValidator({ uuid });
-            if (formErrors)
-                throw new apollo_server_express_1.ValidationError("Invalid UUID Syntax.");
             const category = yield entity_1.Category.findOne({
-                where: { uuid },
+                where: { id },
                 relations: ["items"],
             });
             if (!category)
@@ -53,34 +48,28 @@ let CategoryResolver = class CategoryResolver {
     }
     createCategory(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const formErrors = yield validators_1.createCategoryValidator(input);
-            if (formErrors)
-                return { errors: formErrors };
             return { payload: yield entity_1.Category.create(input).save() };
         });
     }
     updateCategory(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const formErrors = yield validators_1.updateCategoryValidator(input);
-            if (formErrors)
-                return { errors: formErrors };
-            const exists = yield entity_1.Category.findOne({ where: { uuid: input.uuid } });
+            const exists = yield entity_1.Category.findOne({ where: { id: input.id } });
             if (!exists)
                 return {
                     errors: new types_1.UpdateCategoryErrors("NOT_FOUND", "No Category matches this ID.", ["No Category matches this uuid"]),
                 };
-            const category = yield utils_1.updateEntity(entity_1.Category, { uuid: input.uuid }, input.fields);
+            const category = yield utils_1.updateEntity(entity_1.Category, { id: input.id }, input.fields);
             return { payload: category };
         });
     }
-    deleteCategory({ uuid, saveDelete }) {
+    deleteCategory({ id, saveDelete }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 if (saveDelete) {
                 }
                 const result = yield typeorm_1.getConnection()
                     .getRepository(entity_1.Category)
-                    .delete({ uuid });
+                    .delete({ id });
                 if (result.affected < 1)
                     throw new errors_1.Err(errors_1.ErrCode.NOT_FOUND, "No category matched this ID.");
                 return { ok: true };
@@ -99,7 +88,7 @@ __decorate([
 ], CategoryResolver.prototype, "categories", null);
 __decorate([
     type_graphql_1.Query(() => entity_1.Category, { nullable: true }),
-    __param(0, type_graphql_1.Arg("uuid")),
+    __param(0, type_graphql_1.Arg("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)

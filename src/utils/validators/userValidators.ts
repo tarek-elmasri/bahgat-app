@@ -1,13 +1,15 @@
-import {
-  LoginInput,
-  RegisterErrors,
-  RegisterInput,
-  UpdateMeErrors,
-  UpdateUserInput,
-} from "../../types";
+// import {
+//   CreateRegisterationErrors,
+//   CreateRegistrationInput,
+//   LoginInput,
+//   RegisterErrors,
+//   RegisterInput,
+//   UpdateMeErrors,
+//   UpdateUserInput,
+// } from "../../types";
 import * as yup from "yup";
-import { myValidator } from "./myValidator";
-import { OnError } from "../../errors";
+// import { myValidator } from "./myValidator";
+// import { OnError } from "../../errors";
 
 const username = yup
   .string()
@@ -22,29 +24,62 @@ const email = yup
   .required("required email.")
   .email("Invalid Email Address.");
 
-export const userSchemaValidators = { username, password, email };
+const phoneNo = yup
+  .number()
+  .required()
+  .integer("Invalid PhoneNo. input value")
+  .min(966500000000, "Invalid phoneNo.")
+  .max(966599999999, "Invalid PhoneNo.");
 
-export const loginValidator = (input: LoginInput) => {
-  const validatorSchema = {
-    email,
-    password,
-  };
-  return myValidator(validatorSchema, input, OnError);
-};
+const OTP = yup
+  .number()
+  .required()
+  .integer("Invalid OTP Value")
+  .min(1000, "Invalid OTP Value")
+  .max(9999, "Invalid OTP Value");
 
-export const registerValidator = (input: RegisterInput) => {
-  const validatorSchema = {
-    username,
-    email,
-    password,
-  };
-  return myValidator(validatorSchema, input, RegisterErrors);
-};
+export const userSchemaValidators = { username, password, email, phoneNo, OTP };
 
-export const updateMeValidator = (input: UpdateUserInput) => {
-  const validatorSchema = {
-    username,
-    email,
-  };
-  return myValidator(validatorSchema, input, UpdateMeErrors);
+export const createLoginSchema = { email, password, phoneNo };
+export const loginSchema = { email, password, phoneNo, OTP };
+// export const loginValidator = (input: LoginInput) => {
+//   return myValidator(loginSchema, input, OnError);
+// };
+
+export const registerSchema = {
+  username,
+  email,
+  password,
+  phoneNo,
+  OTP,
 };
+// export const registerValidator = (input: RegisterInput) => {
+//   return myValidator(registerSchema, input, RegisterErrors);
+// };
+
+export const createRegistrationSchema = { username, email, password, phoneNo };
+// export const createRegisterationValidator = async (
+//   input: CreateRegistrationInput
+// ) => {
+//   const inputErrors = await myValidator(
+//     createRegistrationSchema,
+//     input,
+//     CreateRegisterationErrors
+//   );
+
+//   if (inputErrors) return inputErrors;
+
+//   const uniqueErrors = await CreateRegisterationErrors.validateUniqness({
+//     email: input.email,
+//     phoneNo: input.phoneNo,
+//   });
+
+//   if (uniqueErrors) return uniqueErrors;
+
+//   return undefined;
+// };
+
+export const updateMeSchema = { username, email, phoneNo };
+// export const updateMeValidator = (input: UpdateUserInput) => {
+//   return myValidator(updateMeSchema, input, UpdateMeErrors);
+// };

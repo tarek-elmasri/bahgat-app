@@ -25,19 +25,19 @@ const batchCarts = (itemIds) => __awaiter(void 0, void 0, void 0, function* () {
             },
         },
         where: {
-            itemUuid: typeorm_1.In(itemIds),
+            itemId: typeorm_1.In(itemIds),
         },
     });
     const itemIdToCart = {};
     cartItems.forEach((ci) => {
-        if (ci.cartUuid in itemIdToCart) {
-            itemIdToCart[ci.itemUuid].push(ci.__cart__);
+        if (ci.cartId in itemIdToCart) {
+            itemIdToCart[ci.itemId].push(ci.__cart__);
         }
         else {
-            itemIdToCart[ci.itemUuid] = [ci.__cart__];
+            itemIdToCart[ci.itemId] = [ci.__cart__];
         }
     });
-    return itemIds.map((itemUuid) => itemIdToCart[itemUuid]);
+    return itemIds.map((itemId) => itemIdToCart[itemId]);
 });
 exports.batchCarts = batchCarts;
 const cartLoader = () => new dataloader_1.default(exports.batchCarts);

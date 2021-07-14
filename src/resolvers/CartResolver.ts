@@ -10,7 +10,7 @@ export class CartResolver {
     try {
       return {
         payload: await Cart.findOne({
-          where: { uuid: req.session.cartUuid },
+          where: { uuid: req.session.cartId },
         }),
       };
     } catch (err) {
@@ -20,17 +20,17 @@ export class CartResolver {
 
   @Mutation(() => PayloadResponse)
   async addItemToCart(
-    @Arg("itemUuid") itemUuid: string,
+    @Arg("itemId") itemId: string,
     @Arg("quantity") quantity: number,
     @Ctx() { req }: MyContext
   ): Promise<PayloadResponse> {
     try {
-      const item = await Item.findOne({ where: { uuid: itemUuid } });
+      const item = await Item.findOne({ where: { id: itemId } });
       if (!item) throw new Err(ErrCode.NOT_FOUND, "No Item found for this ID.");
 
       await CartsItems.create({
-        cartUuid: req.session.cartUuid,
-        itemUuid,
+        cartId: req.session.cartId,
+        itemId,
         quantity,
       }).save();
 

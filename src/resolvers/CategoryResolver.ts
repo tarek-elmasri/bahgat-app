@@ -12,12 +12,11 @@ import {
   UpdateCategoryResponse,
   UpdateCategoryErrors,
 } from "../types";
-import {
-  createCategoryValidator,
-  updateCategoryValidator,
-  UuidValidator,
-} from "../utils/validators";
-import { ValidationError } from "apollo-server-express";
+// import {
+//   createCategoryValidator,
+//   updateCategoryValidator,
+// } from "../utils/validators";
+//import { ValidationError } from "apollo-server-express";
 import { updateEntity } from "../utils";
 
 @Resolver()
@@ -28,14 +27,14 @@ export class CategoryResolver {
   }
 
   @Query(() => Category, { nullable: true })
-  async category(@Arg("uuid") uuid: string): Promise<Category | undefined> {
+  async category(@Arg("id") id: string): Promise<Category | undefined> {
     // validating uuid syntax
-    const formErrors = await UuidValidator({ uuid });
-    if (formErrors) throw new ValidationError("Invalid UUID Syntax.");
+    // const formErrors = await UuidValidator({ id });
+    // if (formErrors) throw new ValidationError("Invalid UUID Syntax.");
 
     //find category
     const category = await Category.findOne({
-      where: { uuid },
+      where: { id },
       relations: ["items"],
     });
 
@@ -50,8 +49,8 @@ export class CategoryResolver {
     @Arg("input") input: NewCategoryInput
   ): Promise<CreateCategoryResponse> {
     //validating form
-    const formErrors = await createCategoryValidator(input);
-    if (formErrors) return { errors: formErrors };
+    // const formErrors = await createCategoryValidator(input);
+    // if (formErrors) return { errors: formErrors };
 
     //save and return
     return { payload: await Category.create(input).save() };
@@ -63,11 +62,11 @@ export class CategoryResolver {
     @Arg("input") input: UpdateCategoryInput
   ): Promise<UpdateCategoryResponse> {
     //validate form input
-    const formErrors = await updateCategoryValidator(input);
-    if (formErrors) return { errors: formErrors };
+    // const formErrors = await updateCategoryValidator(input);
+    // if (formErrors) return { errors: formErrors };
 
     // chech if category exists
-    const exists = await Category.findOne({ where: { uuid: input.uuid } });
+    const exists = await Category.findOne({ where: { id: input.id } });
     if (!exists)
       return {
         errors: new UpdateCategoryErrors(
@@ -80,7 +79,7 @@ export class CategoryResolver {
     //update category
     const category = await updateEntity(
       Category,
-      { uuid: input.uuid },
+      { id: input.id },
       input.fields
     );
 
@@ -91,7 +90,7 @@ export class CategoryResolver {
   @Mutation(() => SuccessResponse)
   //@UseMiddleware(isAuthorized(["deleteCategory"]))
   async deleteCategory(
-    @Arg("input") { uuid, saveDelete }: DeleteCategoryInput
+    @Arg("input") { id, saveDelete }: DeleteCategoryInput
   ): Promise<SuccessResponse> {
     try {
       if (saveDelete) {
@@ -100,7 +99,7 @@ export class CategoryResolver {
 
       const result = await getConnection()
         .getRepository(Category)
-        .delete({ uuid });
+        .delete({ id });
       if (result.affected! < 1)
         throw new Err(ErrCode.NOT_FOUND, "No category matched this ID.");
 

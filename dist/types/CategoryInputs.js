@@ -43,7 +43,7 @@ let UpdateCategoryInput = class UpdateCategoryInput {
 __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
-], UpdateCategoryInput.prototype, "uuid", void 0);
+], UpdateCategoryInput.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => updateCategoryFields),
     __metadata("design:type", updateCategoryFields)
@@ -57,7 +57,7 @@ let DeleteCategoryInput = class DeleteCategoryInput {
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], DeleteCategoryInput.prototype, "uuid", void 0);
+], DeleteCategoryInput.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => Boolean, { defaultValue: true }),
     __metadata("design:type", Boolean)

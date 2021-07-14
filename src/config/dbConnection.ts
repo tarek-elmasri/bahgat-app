@@ -7,7 +7,7 @@ export const dbConnection: ConnectionOptions = {
   port: 5432,
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
-  database: "chocolate",
+  database: "shopping_app",
   synchronize: !__producation__,
   logging: !__producation__,
   entities: ["dist/entity/**/*.js"],

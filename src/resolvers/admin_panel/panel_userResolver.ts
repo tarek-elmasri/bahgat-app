@@ -23,10 +23,10 @@ mutations:
 export class panel_userResolver {
   @Query(() => PayloadResponse)
   @UseMiddleware(isAuthorized(["viewAllUsers"]))
-  async panel_user(@Arg("uuid") uuid: string): Promise<PayloadResponse> {
+  async panel_user(@Arg("id") id: string): Promise<PayloadResponse> {
     try {
       const user = await User.findOne({
-        where: { uuid },
+        where: { id },
         relations: ["authorization"],
       });
 
@@ -53,11 +53,11 @@ export class panel_userResolver {
   @UseMiddleware(isAuthorized(["updateUser"]))
   async panel_updateUser(
     @Arg("properties", () => PanelUpdateUserInput)
-    { uuid, fields, authorization }: PanelUpdateUserInput
+    { id, fields, authorization }: PanelUpdateUserInput
   ): Promise<PayloadResponse> {
     try {
       const existedUser = await User.findOne({
-        where: { uuid },
+        where: { id },
         relations: ["authorization"],
       });
       if (!existedUser)
@@ -74,7 +74,7 @@ export class panel_userResolver {
       // const formErrors = await myValidator(userForm, createUserRules);
       // if (formErrors) return { errors: formErrors };
 
-      await getConnection().getRepository(User).update({ uuid }, fields);
+      await getConnection().getRepository(User).update({ id }, fields);
 
       // checking if user doesnt have authorization if there is an authorization update
       // to create new before the update
@@ -90,7 +90,7 @@ export class panel_userResolver {
       }
 
       const user = await User.findOne({
-        where: { uuid },
+        where: { id },
         relations: ["authorization"],
       });
       return {
@@ -103,9 +103,9 @@ export class panel_userResolver {
 
   @Mutation(() => SuccessResponse)
   @UseMiddleware(isAuthorized(["deleteUser"]))
-  async panel_deleteUser(@Arg("uuid") uuid: string): Promise<SuccessResponse> {
+  async panel_deleteUser(@Arg("id") id: string): Promise<SuccessResponse> {
     try {
-      const result = await User.delete({ uuid });
+      const result = await User.delete({ id });
 
       if (result.affected! < 1)
         throw new Err(ErrCode.NOT_FOUND, "No User matches this UUID");

@@ -11,7 +11,7 @@ export class NewItemError implements OnError {
   message: string;
 
   @Field(() => [String], { nullable: true })
-  categoryUuid?: string[];
+  categoryId?: string[];
 
   @Field(() => [String], { nullable: true })
   name?: string[];
@@ -25,11 +25,11 @@ export class NewItemError implements OnError {
   constructor(
     code: string = "INVALID_INPUT_PARAMETER",
     message: string = "Invalid Input Parameters",
-    categoryUuid?: string[]
+    categoryId?: string[]
   ) {
     this.code = code;
     this.message = message;
-    this.categoryUuid = categoryUuid;
+    this.categoryId = categoryId;
   }
 }
 
@@ -39,17 +39,17 @@ export class UpdateItemErrors
   implements InvalidUuidSyntaxError
 {
   @Field(() => [String], { nullable: true })
-  uuid?: string[];
+  id?: string[];
 
   constructor(
     code?: string,
     message?: string,
-    uuid?: string[],
-    categoryUuid?: string[]
+    id?: string[],
+    categoryId?: string[]
   ) {
     super(code, message);
-    this.uuid = uuid;
-    this.categoryUuid = categoryUuid;
+    this.id = id;
+    this.categoryId = categoryId;
   }
 }
 

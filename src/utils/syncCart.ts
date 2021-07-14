@@ -13,7 +13,7 @@ type SyncCartFn = (user: User, session: Session) => Promise<Cart>;
 */
 export const syncCart: SyncCartFn = async (user, session) => {
   const userCart = await Cart.findOne({
-    where: { userUuid: user.uuid },
+    where: { userId: user.id },
   });
 
   if (!userCart)
@@ -27,8 +27,8 @@ export const syncCart: SyncCartFn = async (user, session) => {
     .getRepository(CartsItems)
     .createQueryBuilder()
     .update()
-    .set({ cartUuid: userCart.uuid })
-    .where(`cartUuid = :cartUuid`, { cartUuid: session.cartUuid }) //current session cart
+    .set({ cartId: userCart.id })
+    .where(`cartId = :cartId`, { cartId: session.cartId }) //current session cart
     .execute();
 
   //deleting current session cart
@@ -36,7 +36,7 @@ export const syncCart: SyncCartFn = async (user, session) => {
     .createQueryBuilder()
     .delete()
     .from(Cart)
-    .where("uuid = :uuid", { uuid: session.cartUuid })
+    .where("id = :id", { id: session.cartId })
     .execute();
 
   return userCart;

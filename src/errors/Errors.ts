@@ -10,7 +10,7 @@ export class OnError {
   message: string;
 
   constructor(
-    code: string = "InputError",
+    code: string = "INVALID_INPUT_PARAMETERS",
     message: string = "invalid input parameters"
   ) {
     this.code = code;
@@ -27,16 +27,16 @@ export class InvalidUuidSyntaxError implements OnError {
   message: string;
 
   @Field(() => [String], { nullable: true })
-  uuid?: string[];
+  id?: string[];
 
   constructor(
     code: string = "UUID_INVALID-SYNTAX",
     message: string = "Invalid Uuid syntax",
-    uuid: string[] = ["Invalid Uuid syntax"]
+    id: string[] = ["Invalid Uuid syntax"]
   ) {
     this.code = code;
     this.message = message;
-    this.uuid = uuid;
+    this.id = id;
   }
 }
 // export class UuidInvalidSyntaxError extends ApolloError {
