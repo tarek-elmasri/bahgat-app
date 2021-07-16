@@ -47,7 +47,7 @@ export class PhoneVerification extends BaseEntity {
     return Date.now() - this.updatedAt.getTime() > OTP_EXPIRATION_MINS; //10 mins;
   }
 
-  public sendOTP() {
+  public async sendOTP() {
     // await send this.otp to this.phoneno.
     return axios
       .post("https://www.msegat.com/gw/sendsms.php", this.createOTPRequest())

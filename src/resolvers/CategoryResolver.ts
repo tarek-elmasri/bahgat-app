@@ -1,8 +1,7 @@
-import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { getConnection } from "typeorm";
-import { isAuthorized } from "../middlewares";
 import { Category } from "../entity";
-import { ErrCode, Err } from "../errors";
+import { ErrCode, Err, InvalidUuidSyntaxError } from "../errors";
 import {
   NewCategoryInput,
   UpdateCategoryInput,
@@ -11,13 +10,19 @@ import {
   CreateCategoryResponse,
   UpdateCategoryResponse,
   UpdateCategoryErrors,
+  CreateCategoryErrors,
 } from "../types";
 // import {
 //   createCategoryValidator,
 //   updateCategoryValidator,
 // } from "../utils/validators";
 //import { ValidationError } from "apollo-server-express";
-import { updateEntity } from "../utils";
+//import { updateEntity } from "../utils";
+import {
+  newCategorySchema,
+  updateCategorySchema,
+  uuidSchema,
+} from "../utils/validators";
 
 @Resolver()
 export class CategoryResolver {
@@ -28,19 +33,14 @@ export class CategoryResolver {
 
   @Query(() => Category, { nullable: true })
   async category(@Arg("id") id: string): Promise<Category | undefined> {
-    // validating uuid syntax
-    // const formErrors = await UuidValidator({ id });
-    // if (formErrors) throw new ValidationError("Invalid UUID Syntax.");
-
+    const formErrors = (
+      await Category.create({ id }).validateInput(uuidSchema)
+    ).getErrors(InvalidUuidSyntaxError);
+    if (formErrors) return undefined;
     //find category
-    const category = await Category.findOne({
+    return Category.findOne({
       where: { id },
-      relations: ["items"],
     });
-
-    if (!category) return undefined;
-
-    return category;
   }
 
   @Mutation(() => CreateCategoryResponse)
@@ -48,42 +48,38 @@ export class CategoryResolver {
   async createCategory(
     @Arg("input") input: NewCategoryInput
   ): Promise<CreateCategoryResponse> {
-    //validating form
-    // const formErrors = await createCategoryValidator(input);
-    // if (formErrors) return { errors: formErrors };
+    const newCategory = Category.create(input);
+    await newCategory.validateInput(newCategorySchema);
+    const formErrors = newCategory.getErrors(CreateCategoryErrors);
+    if (formErrors) return { errors: formErrors };
 
     //save and return
-    return { payload: await Category.create(input).save() };
+    return { payload: await newCategory.save() };
   }
 
   @Mutation(() => UpdateCategoryResponse)
-  @UseMiddleware(isAuthorized(["updateCategory"]))
+  //@UseMiddleware(isAuthorized(["updateCategory"]))
   async updateCategory(
     @Arg("input") input: UpdateCategoryInput
   ): Promise<UpdateCategoryResponse> {
     //validate form input
-    // const formErrors = await updateCategoryValidator(input);
-    // if (formErrors) return { errors: formErrors };
+    const targetCategory = Category.create({ id: input.id, ...input.fields });
+    await targetCategory.validateInput(updateCategorySchema);
+    const formErrors = targetCategory.getErrors(UpdateCategoryErrors);
+    if (formErrors) return { errors: formErrors };
 
-    // chech if category exists
-    const exists = await Category.findOne({ where: { id: input.id } });
-    if (!exists)
+    const category = await Category.preload(targetCategory);
+    if (!category)
       return {
         errors: new UpdateCategoryErrors(
           "NOT_FOUND",
           "No Category matches this ID.",
-          ["No Category matches this uuid"]
+          ["No Category matches this ID."]
         ),
       };
 
-    //update category
-    const category = await updateEntity(
-      Category,
-      { id: input.id },
-      input.fields
-    );
-
-    return { payload: category! };
+    //save and return
+    return { payload: await category.save() };
   }
 
   // TODO: implement new response structure

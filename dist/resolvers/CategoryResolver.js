@@ -24,11 +24,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const middlewares_1 = require("../middlewares");
 const entity_1 = require("../entity");
 const errors_1 = require("../errors");
 const types_1 = require("../types");
-const utils_1 = require("../utils");
+const validators_1 = require("../utils/validators");
 let CategoryResolver = class CategoryResolver {
     categories() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,29 +36,37 @@ let CategoryResolver = class CategoryResolver {
     }
     category(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const category = yield entity_1.Category.findOne({
-                where: { id },
-                relations: ["items"],
-            });
-            if (!category)
+            const formErrors = (yield entity_1.Category.create({ id }).validateInput(validators_1.uuidSchema)).getErrors(errors_1.InvalidUuidSyntaxError);
+            if (formErrors)
                 return undefined;
-            return category;
+            return entity_1.Category.findOne({
+                where: { id },
+            });
         });
     }
     createCategory(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            return { payload: yield entity_1.Category.create(input).save() };
+            const newCategory = entity_1.Category.create(input);
+            yield newCategory.validateInput(validators_1.newCategorySchema);
+            const formErrors = newCategory.getErrors(types_1.CreateCategoryErrors);
+            if (formErrors)
+                return { errors: formErrors };
+            return { payload: yield newCategory.save() };
         });
     }
     updateCategory(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const exists = yield entity_1.Category.findOne({ where: { id: input.id } });
-            if (!exists)
+            const targetCategory = entity_1.Category.create(Object.assign({ id: input.id }, input.fields));
+            yield targetCategory.validateInput(validators_1.updateCategorySchema);
+            const formErrors = targetCategory.getErrors(types_1.UpdateCategoryErrors);
+            if (formErrors)
+                return { errors: formErrors };
+            const category = yield entity_1.Category.preload(targetCategory);
+            if (!category)
                 return {
-                    errors: new types_1.UpdateCategoryErrors("NOT_FOUND", "No Category matches this ID.", ["No Category matches this uuid"]),
+                    errors: new types_1.UpdateCategoryErrors("NOT_FOUND", "No Category matches this ID.", ["No Category matches this ID."]),
                 };
-            const category = yield utils_1.updateEntity(entity_1.Category, { id: input.id }, input.fields);
-            return { payload: category };
+            return { payload: yield category.save() };
         });
     }
     deleteCategory({ id, saveDelete }) {
@@ -102,7 +109,6 @@ __decorate([
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateCategoryResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isAuthorized(["updateCategory"])),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),

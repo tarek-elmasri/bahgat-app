@@ -12,6 +12,7 @@ const description = yup
   .required("Description field is required.")
   .min(4, "Description is Too Short.");
 
+export const newCategorySchema = { name, description };
 export const categorySchemaValidators = { name, description };
 
 export const createCategoryValidator = (input: NewCategoryInput) => {
@@ -22,6 +23,7 @@ export const createCategoryValidator = (input: NewCategoryInput) => {
   return myValidator(validatorSchema, input /*CreateCategoryErrors*/);
 };
 
+export const updateCategorySchema = { id: uuidV4, name, description };
 export const updateCategoryValidator = (input: UpdateCategoryInput) => {
   const validatorSchema = {
     id: uuidV4,

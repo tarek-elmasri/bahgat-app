@@ -29,6 +29,7 @@ const type_graphql_1 = require("type-graphql");
 const types_1 = require("../types");
 const middlewares_1 = require("../middlewares");
 const validators_1 = require("../utils/validators");
+const typeorm_1 = require("typeorm");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -38,11 +39,11 @@ let UserResolver = class UserResolver {
     }
     createLogin(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const userAttempt = entity_1.User.create(input).normalizeEmail();
-            yield userAttempt.validateInput(validators_1.createLoginSchema);
-            const formErrors = userAttempt.getErrors(errors_1.OnError);
-            if (formErrors)
-                return { errors: formErrors };
+            const userAttempt = yield entity_1.User.create(input)
+                .normalizeEmail()
+                .validateInput(validators_1.createLoginSchema);
+            if (userAttempt.getErrors())
+                return { errors: userAttempt.getErrors() };
             const user = yield userAttempt.auth();
             if (!user)
                 return {
@@ -56,12 +57,14 @@ let UserResolver = class UserResolver {
     }
     login(credentials, { req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const userAttempt = entity_1.User.create(credentials).setOTP(credentials.OTP);
-            const formErrors = (yield userAttempt.validateInput(validators_1.loginSchema)).getErrors(errors_1.OnError);
-            if (formErrors) {
-                formErrors.code = "INVALID_CREDENTIALS";
-                formErrors.message = "Invalid Email or Password";
-                return { errors: formErrors };
+            const userAttempt = yield entity_1.User.create(credentials)
+                .setOTP(credentials.OTP)
+                .validateInput(validators_1.loginSchema);
+            const errors = userAttempt.getErrors(errors_1.OnError);
+            if (errors) {
+                errors.code = "INVALID_CREDENTIALS";
+                errors.message = "Invalid Email or Password";
+                return { errors };
             }
             const user = yield userAttempt.auth({ validateOTP: true });
             if (!user)
@@ -77,12 +80,12 @@ let UserResolver = class UserResolver {
     }
     createRegistration(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            const userAttempt = entity_1.User.create(input).normalizeEmail();
-            yield userAttempt.validateInput(validators_1.createRegistrationSchema);
-            yield userAttempt.validateUniqueness();
-            const formErrors = userAttempt.getErrors(types_1.CreateRegisterationErrors);
-            if (formErrors)
-                return { errors: formErrors };
+            const userAttempt = yield (yield entity_1.User.create(input)
+                .normalizeEmail()
+                .validateInput(validators_1.createRegistrationSchema)).validateUniqueness();
+            const errors = userAttempt.getErrors(types_1.CreateRegisterationErrors);
+            if (errors)
+                return { errors };
             let phoneVerification = yield entity_1.PhoneVerification.findOne({
                 where: { phoneNo: input.phoneNo },
             });
@@ -101,7 +104,12 @@ let UserResolver = class UserResolver {
                 return {
                     errors: new types_1.CreateRegisterationErrors(otpResponse.code, otpResponse.message),
                 };
-            return { payload: "OTP is successfully sent to phone no." };
+            return {
+                payload: {
+                    message: "OTP is successfully sent to phone no.",
+                    code: "Success",
+                },
+            };
         });
     }
     register(input, { req, res }) {
@@ -109,9 +117,9 @@ let UserResolver = class UserResolver {
             const user = entity_1.User.create(input).normalizeEmail().setOTP(input.OTP);
             yield user.validateInput(validators_1.registerSchema);
             yield user.validateUniqueness();
-            const formErrors = user.getErrors(types_1.RegisterErrors);
-            if (formErrors)
-                return { errors: formErrors };
+            const errors = user.getErrors(types_1.RegisterErrors);
+            if (errors)
+                return { errors };
             const verifiedPhone = yield entity_1.PhoneVerification.findOne({
                 where: { phoneNo: input.phoneNo },
             });
@@ -136,17 +144,75 @@ let UserResolver = class UserResolver {
     updateMe(input, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
-            const formErrors = (yield (yield entity_1.User.create(input).validateInput(validators_1.updateMeSchema)).validateUniqueness({ user: user })).getErrors(types_1.UpdateMeErrors);
-            if (formErrors)
-                return { errors: formErrors };
-            const updatedUser = yield utils_1.updateEntity(entity_1.User, { id: user.id }, Object.assign(Object.assign({}, input), { email: utils_1.normalizeEmail(input.email) }));
-            return { payload: updatedUser };
+            const errors = (yield (yield entity_1.User.create(input).normalizeEmail().validateInput(validators_1.updateMeSchema)).validateUniqueness({ user: user })).getErrors(types_1.UpdateMeErrors);
+            if (errors)
+                return { errors };
+            yield typeorm_1.getConnection().getRepository(entity_1.User).update({ id: user.id }, input);
+            yield user.reload();
+            return { payload: user };
         });
     }
     LogOut({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             yield middlewares_1.deleteSession(req.session);
             return true;
+        });
+    }
+    createResetPassword(input, { req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { user } = req;
+            const userAttempt = entity_1.User.create({
+                password: input.oldPassword,
+            }).setNewPassword(input.newPassword);
+            yield userAttempt.validateInput(validators_1.createResetPasswordSchema);
+            const errors = userAttempt.getErrors(types_1.CreateResetPasswordErrors);
+            if (errors)
+                return { errors };
+            if (!(yield userAttempt.isPasswordMatch(user.password)))
+                return {
+                    errors: new types_1.CreateResetPasswordErrors("INVALID_CREDENTIALS", "Invalid credentials", ["Invalid user Password."]),
+                };
+            const otpResponse = yield user.sendOTP();
+            if (otpResponse.code !== "1")
+                return {
+                    errors: otpResponse,
+                };
+            return {
+                payload: new types_1.OTP_Response("Success", "OTP sent successfully to user phoneNo."),
+            };
+        });
+    }
+    resetPassword(input, { req, res }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { user, session } = req;
+            const userAttempt = entity_1.User.create({ password: input.oldPassword })
+                .setOTP(input.OTP)
+                .setNewPassword(input.newPassword);
+            yield userAttempt.validateInput(validators_1.resetPasswordSchema);
+            const errors = userAttempt.getErrors(types_1.ResetPasswordErrors);
+            if (errors)
+                return { errors };
+            if (!(yield userAttempt.isPasswordMatch(user.password)))
+                return {
+                    errors: new types_1.ResetPasswordErrors("INVALID_CREDENTIALS", "Invalid credentials", ["Invalid user Password."]),
+                };
+            const verifiedPhone = yield entity_1.PhoneVerification.findOne({
+                where: { phoneNo: user.phoneNo },
+            });
+            if (!verifiedPhone.isValidOTP(input.OTP))
+                return {
+                    errors: new types_1.ResetPasswordErrors("INVALID_OTP", "Invalid OTP Match.", undefined, undefined, ["Invalid or expired OTP."]),
+                };
+            user.password = input.newPassword;
+            user.setRefreshToken();
+            yield user.register();
+            yield middlewares_1.updateSession(session, user, req, res);
+            return {
+                payload: {
+                    code: "Success",
+                    message: "Password has successfully updated",
+                },
+            };
         });
     }
 };
@@ -206,6 +272,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "LogOut", null);
+__decorate([
+    type_graphql_1.Mutation(() => types_1.CreateResetPasswordResponse),
+    __param(0, type_graphql_1.Arg("input")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [types_1.CreateResetPasswordInput, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "createResetPassword", null);
+__decorate([
+    type_graphql_1.Mutation(() => types_1.ResetPasswordResponse),
+    __param(0, type_graphql_1.Arg("input")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [types_1.ResetPasswordInput, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "resetPassword", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);

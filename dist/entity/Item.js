@@ -11,14 +11,44 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Item = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const _1 = require("./");
+const validators_1 = require("../utils/validators");
+const errors_1 = require("../errors");
 let Item = class Item extends typeorm_1.BaseEntity {
+    constructor() {
+        super(...arguments);
+        this.errors = {};
+        this.inputErrors = undefined;
+        this.getErrors = (errorClass) => {
+            if (this.inputErrors)
+                return Object.assign(errorClass ? new errorClass() : new errors_1.OnError(), this.errors);
+            return undefined;
+        };
+    }
     carts({ cartsLoader }) {
         return cartsLoader.load(this.id);
+    }
+    validateInput(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.inputErrors = yield validators_1.myValidator(schema, this);
+            this.errors = Object.assign(this.errors, this.inputErrors);
+            console.log("input errors: ", this.inputErrors);
+            console.log("errors", this.errors);
+            return this;
+        });
     }
 };
 __decorate([

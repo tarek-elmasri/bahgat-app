@@ -8,12 +8,45 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Category = void 0;
+const validators_1 = require("../utils/validators");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const _1 = require("./");
 let Category = class Category extends typeorm_1.BaseEntity {
+    constructor() {
+        super(...arguments);
+        this.errors = {};
+        this.inputErrors = undefined;
+        this.getErrors = (errorClass) => {
+            if (this.inputErrors)
+                return Object.assign(new errorClass(), this.errors);
+            return undefined;
+        };
+    }
+    validateInput(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.inputErrors = yield validators_1.myValidator(schema, {
+                id: this.id,
+                name: this.name,
+                description: this.description,
+            });
+            this.errors = Object.assign(this.errors, this.inputErrors);
+            console.log("input errors: ", this.inputErrors);
+            console.log("errors", this.errors);
+            return this;
+        });
+    }
 };
 __decorate([
     type_graphql_1.Field(() => String),

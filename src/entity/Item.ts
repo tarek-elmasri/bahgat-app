@@ -1,4 +1,4 @@
-import { MyContext } from "../types";
+import { MyContext, ValidatorSchema } from "../types";
 import { Ctx, Field, Float, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -12,10 +12,12 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Cart, CartsItems, Category } from "./";
+import { InputValidator, myValidator } from "../utils/validators";
+import { OnError } from "../errors";
 
 @ObjectType()
 @Entity("items")
-export class Item extends BaseEntity {
+export class Item extends BaseEntity implements InputValidator {
   @Field(() => String)
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -108,4 +110,24 @@ export class Item extends BaseEntity {
   carts(@Ctx() { cartsLoader }: MyContext) {
     return cartsLoader.load(this.id);
   }
+
+  // functions
+  private errors: { [key: string]: string[] } = {};
+  private inputErrors: { [key: string]: string[] } | undefined = undefined;
+  async validateInput(schema: ValidatorSchema) {
+    this.inputErrors = await myValidator<Item>(schema, this);
+    this.errors = Object.assign(this.errors, this.inputErrors);
+    console.log("input errors: ", this.inputErrors);
+    console.log("errors", this.errors);
+    return this;
+  }
+
+  getErrors = <T>(errorClass?: { new (): T }): T | OnError | undefined => {
+    if (this.inputErrors)
+      return Object.assign(
+        errorClass ? new errorClass() : new OnError(),
+        this.errors
+      );
+    return undefined;
+  };
 }

@@ -32,6 +32,7 @@ const validators_1 = require("../utils/validators");
 const bcryptjs_1 = require("bcryptjs");
 const PhoneValidation_1 = require("./PhoneValidation");
 const apollo_server_express_1 = require("apollo-server-express");
+const errors_1 = require("../errors");
 let User = User_1 = class User extends typeorm_1.BaseEntity {
     constructor() {
         super(...arguments);
@@ -39,21 +40,14 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         this.inputErrors = undefined;
         this.uniquenessErrors = false;
         this.validateInput = (schema) => __awaiter(this, void 0, void 0, function* () {
-            this.uniquenessErrors;
-            this.inputErrors = yield validators_1.myValidator(schema, {
-                id: this.id,
-                username: this.username,
-                email: this.email,
-                password: this.password,
-                phoneNo: this.phoneNo,
-                OTP: this.OTP,
-            });
+            this.newPassword;
+            this.inputErrors = yield validators_1.myValidator(schema, this);
             this.errors = Object.assign(this.errors, this.inputErrors);
             return this;
         });
         this.getErrors = (errorClass) => {
             if (this.uniquenessErrors || this.inputErrors)
-                return Object.assign(new errorClass(), this.errors);
+                return Object.assign(errorClass ? new errorClass() : new errors_1.OnError(), this.errors);
             return undefined;
         };
         this.auth = (options = { validateOTP: false }) => __awaiter(this, void 0, void 0, function* () {
@@ -153,6 +147,15 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         return __awaiter(this, void 0, void 0, function* () {
             this.password = yield bcryptjs_1.hash(this.password, 12);
             return this.save();
+        });
+    }
+    setNewPassword(newPassword) {
+        this.newPassword = newPassword;
+        return this;
+    }
+    isPasswordMatch(userPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return bcryptjs_1.compare(this.password, userPassword);
         });
     }
 };

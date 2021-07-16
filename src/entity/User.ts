@@ -1,4 +1,4 @@
-import { MyContext, Role } from "../types";
+import { MyContext, OTP_Response, Role, ValidatorSchema } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -16,33 +16,34 @@ import { Cart, Authorization } from "./";
 import { createRefreshToken } from "../middlewares";
 import {
   InputValidator,
-  createLoginSchema,
-  createRegistrationSchema,
-  loginSchema,
+  // createLoginSchema,
+  // createRegistrationSchema,
+  // loginSchema,
   myValidator,
-  registerSchema,
-  updateMeSchema,
+  // registerSchema,
+  // updateMeSchema,
 } from "../utils/validators";
 import { compare, hash } from "bcryptjs";
 import { PhoneVerification } from "./PhoneValidation";
 import { ApolloError } from "apollo-server-express";
+import { OnError } from "../errors";
 
-type CreateRegistrationSchema = typeof createRegistrationSchema;
-type RegisterSchema = typeof registerSchema;
-type LoginSchema = typeof loginSchema;
-type CreateLoginSchema = typeof createLoginSchema;
-type UpdateMeSchema = typeof updateMeSchema;
-type ValidatorSchema =
-  | CreateRegistrationSchema
-  | RegisterSchema
-  | LoginSchema
-  | CreateLoginSchema
-  | UpdateMeSchema;
+// type CreateRegistrationSchema = typeof createRegistrationSchema;
+// type RegisterSchema = typeof registerSchema;
+// type LoginSchema = typeof loginSchema;
+// type CreateLoginSchema = typeof createLoginSchema;
+// type UpdateMeSchema = typeof updateMeSchema;
+// type ValidatorSchema =
+//   | CreateRegistrationSchema
+//   | RegisterSchema
+//   | LoginSchema
+//   | CreateLoginSchema
+//   | UpdateMeSchema;
 
-interface OTP_Response {
-  code: string;
-  message: string;
-}
+// interface OTP_Response {
+//   code: string;
+//   message: string;
+// }
 
 @ObjectType()
 @Entity("users")
@@ -124,21 +125,26 @@ export class User extends BaseEntity implements InputValidator {
   private errors: { [key: string]: string[] } = {};
   private inputErrors: { [key: string]: string[] } | undefined = undefined;
   private uniquenessErrors: boolean = false;
-
+  private newPassword: string;
   setOTP(OTP: number) {
     this.OTP = OTP;
     return this;
   }
   validateInput = async (schema: ValidatorSchema) => {
-    this.uniquenessErrors;
-    this.inputErrors = await myValidator(schema, {
-      id: this.id,
-      username: this.username,
-      email: this.email,
-      password: this.password,
-      phoneNo: this.phoneNo,
-      OTP: this.OTP,
-    });
+    this.newPassword;
+    this.inputErrors = await myValidator<User>(
+      schema,
+      //   {
+      //   id: this.id,
+      //   username: this.username,
+      //   email: this.email,
+      //   password: this.password,
+      //   phoneNo: this.phoneNo,
+      //   OTP: this.OTP,
+      //   newPassword: this.newPassword,
+      // }
+      this
+    );
     this.errors = Object.assign(this.errors, this.inputErrors);
 
     return this;
@@ -182,9 +188,12 @@ export class User extends BaseEntity implements InputValidator {
     return this;
   }
 
-  getErrors = <T>(errorClass: { new (): T }): T | undefined => {
+  getErrors = <T>(errorClass?: { new (): T }): T | OnError | undefined => {
     if (this.uniquenessErrors || this.inputErrors)
-      return Object.assign(new errorClass(), this.errors);
+      return Object.assign(
+        errorClass ? new errorClass() : new OnError(),
+        this.errors
+      );
 
     return undefined;
   };
@@ -242,5 +251,14 @@ export class User extends BaseEntity implements InputValidator {
   async register() {
     this.password = await hash(this.password, 12);
     return this.save();
+  }
+
+  setNewPassword(newPassword: string) {
+    this.newPassword = newPassword;
+    return this;
+  }
+
+  async isPasswordMatch(userPassword: string) {
+    return compare(this.password, userPassword);
   }
 }

@@ -39,6 +39,8 @@ const OTP = yup
   .max(9999, "Invalid OTP Value");
 
 export const userSchemaValidators = { username, password, email, phoneNo, OTP };
+export const createResetPasswordSchema = { password, newPassword: password };
+export const resetPasswordSchema = { password, newPassword: password, OTP };
 
 export const createLoginSchema = { email, password, phoneNo };
 export const loginSchema = { email, password, phoneNo, OTP };

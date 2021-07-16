@@ -1,5 +1,5 @@
 import { PhoneVerification, User } from "../entity";
-import { normalizeEmail, syncCart, updateEntity } from "../utils";
+import { syncCart } from "../utils";
 import { OnError } from "../errors";
 import {
   Arg,
@@ -26,6 +26,13 @@ import {
   UpdateMeErrors,
   CreateLoginResponse,
   CreateLoginInput,
+  CreateResetPasswordInput,
+  CreateResetPasswordResponse,
+  CreateResetPasswordErrors,
+  ResetPasswordErrors,
+  ResetPasswordResponse,
+  ResetPasswordInput,
+  OTP_Response,
 } from "../types";
 import {
   updateSession,
@@ -36,21 +43,13 @@ import {
 import {
   createLoginSchema,
   createRegistrationSchema,
+  createResetPasswordSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   updateMeSchema,
 } from "../utils/validators";
-
-/*
-queries:
-    me
-
-mutations:
-    login
-    register
-    updateMe
-    resetPassword
-*/
+import { getConnection } from "typeorm";
 
 @Resolver()
 export class UserResolver {
@@ -65,10 +64,11 @@ export class UserResolver {
   async createLogin(
     @Arg("input") input: CreateLoginInput
   ): Promise<CreateLoginResponse> {
-    const userAttempt = User.create(input).normalizeEmail();
-    await userAttempt.validateInput(createLoginSchema);
-    const formErrors = userAttempt.getErrors(OnError);
-    if (formErrors) return { errors: formErrors };
+    const userAttempt = await User.create(input)
+      .normalizeEmail()
+      .validateInput(createLoginSchema);
+
+    if (userAttempt.getErrors()) return { errors: userAttempt.getErrors() };
 
     const user = await userAttempt.auth();
     if (!user)
@@ -90,15 +90,16 @@ export class UserResolver {
     @Ctx() { req, res }: MyContext
   ): Promise<LoginResponse> {
     //validate input
-    const userAttempt = User.create(credentials).setOTP(credentials.OTP);
-    const formErrors = (await userAttempt.validateInput(loginSchema)).getErrors(
-      OnError
-    );
+    const userAttempt = await User.create(credentials)
+      .setOTP(credentials.OTP)
+      .validateInput(loginSchema);
 
-    if (formErrors) {
-      formErrors.code = "INVALID_CREDENTIALS";
-      formErrors.message = "Invalid Email or Password";
-      return { errors: formErrors };
+    const errors = userAttempt.getErrors(OnError);
+
+    if (errors) {
+      errors.code = "INVALID_CREDENTIALS";
+      errors.message = "Invalid Email or Password";
+      return { errors };
     }
 
     //Authentication
@@ -131,11 +132,14 @@ export class UserResolver {
     @Arg("input") input: CreateRegistrationInput
   ): Promise<CreateRegisterationResponse> {
     // input validations
-    const userAttempt = User.create(input).normalizeEmail();
-    await userAttempt.validateInput(createRegistrationSchema);
-    await userAttempt.validateUniqueness();
-    const formErrors = userAttempt.getErrors(CreateRegisterationErrors);
-    if (formErrors) return { errors: formErrors };
+    const userAttempt = await (
+      await User.create(input)
+        .normalizeEmail()
+        .validateInput(createRegistrationSchema)
+    ).validateUniqueness();
+
+    const errors = userAttempt.getErrors(CreateRegisterationErrors);
+    if (errors) return { errors };
 
     // check if previus requests wea sent.
     let phoneVerification = await PhoneVerification.findOne({
@@ -167,7 +171,12 @@ export class UserResolver {
           otpResponse.message
         ),
       };
-    return { payload: "OTP is successfully sent to phone no." };
+    return {
+      payload: {
+        message: "OTP is successfully sent to phone no.",
+        code: "Success",
+      },
+    };
   }
 
   @Mutation(() => RegisterResponse)
@@ -180,8 +189,8 @@ export class UserResolver {
     const user = User.create(input).normalizeEmail().setOTP(input.OTP);
     await user.validateInput(registerSchema);
     await user.validateUniqueness();
-    const formErrors = user.getErrors(RegisterErrors);
-    if (formErrors) return { errors: formErrors };
+    const errors = user.getErrors(RegisterErrors);
+    if (errors) return { errors };
 
     // find the phone verification for otp
     const verifiedPhone = await PhoneVerification.findOne({
@@ -230,25 +239,19 @@ export class UserResolver {
     //if (!user) throw new UnAuthorizedError("Not Logged IN");
 
     //validating the form
-    const formErrors = (
+    const errors = (
       await (
-        await User.create(input).validateInput(updateMeSchema)
+        await User.create(input).normalizeEmail().validateInput(updateMeSchema)
       ).validateUniqueness({ user: user! })
     ).getErrors(UpdateMeErrors);
 
-    if (formErrors) return { errors: formErrors };
+    if (errors) return { errors };
 
     //update user
-    const updatedUser = await updateEntity(
-      User,
-      { id: user!.id },
-      {
-        ...input,
-        email: normalizeEmail(input.email),
-      }
-    );
+    await getConnection().getRepository(User).update({ id: user!.id }, input);
+    await user!.reload();
 
-    return { payload: updatedUser! };
+    return { payload: user };
   }
 
   @Mutation(() => Boolean)
@@ -256,24 +259,99 @@ export class UserResolver {
     await deleteSession(req.session);
     return true;
   }
+
+  @Mutation(() => CreateResetPasswordResponse)
+  //@UseMiddleware(isAuthenticated)
+  async createResetPassword(
+    @Arg("input") input: CreateResetPasswordInput,
+    @Ctx() { req }: MyContext
+  ): Promise<CreateResetPasswordResponse> {
+    const { user } = req;
+    const userAttempt = User.create({
+      password: input.oldPassword,
+    }).setNewPassword(input.newPassword);
+    await userAttempt.validateInput(createResetPasswordSchema);
+
+    const errors = userAttempt.getErrors(CreateResetPasswordErrors);
+    if (errors) return { errors };
+
+    if (!(await userAttempt.isPasswordMatch(user!.password)))
+      return {
+        errors: new CreateResetPasswordErrors(
+          "INVALID_CREDENTIALS",
+          "Invalid credentials",
+          ["Invalid user Password."]
+        ),
+      };
+
+    const otpResponse = await user!.sendOTP();
+
+    if (otpResponse.code !== "1")
+      return {
+        errors: otpResponse,
+      };
+
+    return {
+      payload: new OTP_Response(
+        "Success",
+        "OTP sent successfully to user phoneNo."
+      ),
+    };
+  }
+
+  @Mutation(() => ResetPasswordResponse)
+  //@UseMiddleware(isAuthenticated)
+  async resetPassword(
+    @Arg("input") input: ResetPasswordInput,
+    @Ctx() { req, res }: MyContext
+  ): Promise<ResetPasswordResponse> {
+    const { user, session } = req;
+    const userAttempt = User.create({ password: input.oldPassword })
+      .setOTP(input.OTP)
+      .setNewPassword(input.newPassword);
+    await userAttempt.validateInput(resetPasswordSchema);
+    const errors = userAttempt.getErrors(ResetPasswordErrors);
+    if (errors) return { errors };
+
+    if (!(await userAttempt.isPasswordMatch(user!.password)))
+      return {
+        errors: new ResetPasswordErrors(
+          "INVALID_CREDENTIALS",
+          "Invalid credentials",
+          ["Invalid user Password."]
+        ),
+      };
+
+    // find the phone verification for otp
+    const verifiedPhone = await PhoneVerification.findOne({
+      where: { phoneNo: user!.phoneNo },
+    });
+
+    // isValidOtp validates OTP match and not expired
+    if (!verifiedPhone!.isValidOTP(input.OTP))
+      return {
+        errors: new ResetPasswordErrors(
+          "INVALID_OTP",
+          "Invalid OTP Match.",
+          undefined,
+          undefined,
+          ["Invalid or expired OTP."]
+        ),
+      };
+
+    user!.password = input.newPassword;
+    // update refresh token to push any other devices logged with old password
+    user!.setRefreshToken();
+    // hash passwords and saves
+    await user!.register();
+    // update session for the new refreshToken
+    await updateSession(session, user!, req, res);
+
+    return {
+      payload: {
+        code: "Success",
+        message: "Password has successfully updated",
+      },
+    };
+  }
 }
-// @Mutation()
-// async resetPassword(
-//   @Arg("input") input: {oldPassword: string , newPassword:string}
-//   @Ctx() {req}:MyContext
-// ): Promise<PayloadResponse>{
-
-//   try {
-//     const formErrors = await myValidator(input , {newPassword: "required|minLength:4"})
-//     if (formErrors) return {errors: formErrors}
-
-//     if (!req.user) throw new Err(ErrCode.NOT_AUTHORIZED, "UnAuthorized action")
-//     const matched = compare(input.oldPassword , req.user.password)
-
-//     if (!matched) throw new Err(ErrCode.NOT_FOUND, "Invalid password for this user")
-
-//   } catch (err) {
-
-//   }
-
-// }

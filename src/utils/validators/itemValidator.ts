@@ -14,6 +14,12 @@ export const categoryId = yup
   .notRequired()
   .uuid("Invalid UUID Syntax.");
 
+export const createItemSchema = {
+  categoryId: uuidV4,
+  name: name.required(),
+  price: price.required(),
+  stock: stock.required(),
+};
 export const createItemValidator = (input: newItemInput) => {
   const schemaValidator = {
     categoryId: uuidV4,
@@ -28,6 +34,13 @@ export const createItemValidator = (input: newItemInput) => {
   );
 };
 
+export const updateItemSchema = {
+  id: uuidV4,
+  categoryId,
+  name: name.notRequired(),
+  price: price.notRequired(),
+  stock: stock.notRequired(),
+};
 export const updateItemValidator = (input: updateItemInput) => {
   const schemaValidator = {
     uuid: uuidV4,

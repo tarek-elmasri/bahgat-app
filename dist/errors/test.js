@@ -9,18 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomInteger = exports.CurrentUser = void 0;
-const type_graphql_1 = require("type-graphql");
-function CurrentUser() {
-    return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
-        if (!context.req.user)
-            throw new Error("Not Logged In");
-        return next();
-    }));
-}
-exports.CurrentUser = CurrentUser;
+exports.randomInteger = void 0;
+const validators_1 = require("../utils/validators");
 const randomInteger = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 exports.randomInteger = randomInteger;
+const testing = () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(yield validators_1.myValidator(validators_1.uuidSchema, {
+        id: "3434534.asdfs.##F",
+        email: "dsds@gmal",
+    }));
+});
+testing();
 //# sourceMappingURL=test.js.map

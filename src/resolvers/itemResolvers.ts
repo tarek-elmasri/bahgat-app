@@ -1,7 +1,6 @@
 //import { ValidationError } from "apollo-server-express";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { Item, Category } from "../entity";
-import { updateEntity } from "../utils";
 import { ErrCode, Err } from "../errors";
 import {
   newItemInput,
@@ -12,6 +11,11 @@ import {
   UpdateItemErrors,
   UpdateItemResponse,
 } from "../types";
+import {
+  createItemSchema,
+  updateItemSchema,
+  uuidSchema,
+} from "../utils/validators";
 //import { isAuthorized } from "../middlewares";
 // import {
 //   //UuidValidator,
@@ -28,15 +32,12 @@ export class ItemResolver {
 
   @Query(() => Item, { nullable: true })
   async item(@Arg("id") id: string): Promise<Item | undefined> {
-    // const uuidError = await UuidValidator({ id });
-    // if (uuidError) throw new ValidationError("Invalid UUID Syntax.");
+    const targetItem = await Item.create({ id }).validateInput(uuidSchema);
+    if (targetItem.getErrors()) return undefined;
 
-    const item = await Item.findOne({
+    return await Item.findOne({
       where: { id },
-      relations: ["category"],
     });
-
-    return item;
   }
 
   @Mutation(() => CreateItemResponse)
@@ -44,10 +45,13 @@ export class ItemResolver {
   async createItem(
     @Arg("input") input: newItemInput
   ): Promise<CreateItemResponse> {
-    // //validating input form
-    // const formErrors = await createItemValidator(input);
-    // if (formErrors) return { errors: formErrors };
+    const newItem = await Item.create({
+      categoryId: input.categoryId,
+      ...input.fields,
+    }).validateInput(createItemSchema);
+    const formErrors = newItem.getErrors(NewItemError);
 
+    if (formErrors) return { errors: formErrors };
     //make sure category for item exists
     const category = await Category.findOne({
       where: { id: input.categoryId },
@@ -61,10 +65,7 @@ export class ItemResolver {
       };
 
     return {
-      payload: await Item.create({
-        categoryId: input.categoryId,
-        ...input.fields,
-      }).save(),
+      payload: await newItem.save(),
     };
   }
 
@@ -73,13 +74,16 @@ export class ItemResolver {
   async updateItem(
     @Arg("input") input: updateItemInput
   ): Promise<UpdateItemResponse> {
-    //validating form
-    // const formErrors = await updateItemValidator(input);
-    // if (formErrors) return { errors: formErrors };
-
     const { id, fields } = input;
+    //validating form
+    const targetItem = await Item.create({ id, ...fields }).validateInput(
+      updateItemSchema
+    );
+    const formErrors = targetItem.getErrors(UpdateItemErrors);
+    if (formErrors) return { errors: formErrors };
+
     // check if item already exists
-    const item = await Item.findOne({ where: { id } });
+    const item = await Item.preload(targetItem);
     if (!item)
       return {
         errors: new UpdateItemErrors("NOT_FOUND", "No Itemf matches this ID.", [
@@ -102,11 +106,9 @@ export class ItemResolver {
           ),
         };
     }
-    //update
-    const updatedItem = await updateEntity(Item, { id }, fields);
 
     return {
-      payload: updatedItem,
+      payload: await targetItem.save(),
     };
   }
 

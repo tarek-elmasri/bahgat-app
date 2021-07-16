@@ -10,8 +10,9 @@ const app = express();
 
 (async () => {
   await createConnection(dbConnection);
-  //use cookies middleware
+
   app.use(cookieParser());
+
   //middleware to build session parameters
   app.use(sessionBuilder);
 

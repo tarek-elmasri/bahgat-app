@@ -99,17 +99,24 @@ export class CreateLoginInput {
   @Field()
   phoneNo: number;
 }
-@InputType()
-export class LoginInput {
-  @Field(() => String)
-  email: string;
 
-  @Field(() => String)
-  password: string;
+@InputType()
+export class LoginInput extends CreateLoginInput {
+  @Field(() => Int)
+  OTP: number;
+}
+
+@InputType()
+export class CreateResetPasswordInput {
+  @Field()
+  oldPassword: string;
 
   @Field()
-  phoneNo: number;
+  newPassword: string;
+}
 
+@InputType()
+export class ResetPasswordInput extends CreateResetPasswordInput {
   @Field(() => Int)
   OTP: number;
 }

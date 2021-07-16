@@ -1,4 +1,4 @@
-import { InvalidUuidSyntaxError } from "../../errors";
+import { InvalidUuidSyntaxError, OnError } from "../../errors";
 import * as yup from "yup";
 import { ValidationError } from "yup";
 import { ValidatorSchema } from "../../types";
@@ -17,9 +17,9 @@ export const UuidValidator = async (input: { id: string }) => {
   );
 };
 
-export const myValidator = async (
+export const myValidator = async <T>(
   schema: any,
-  input: any
+  input: Partial<T>
 ): Promise<{ [key: string]: string[] } | undefined> => {
   return yup
     .object()
@@ -57,5 +57,7 @@ const formatError = (err: any) => {
 
 export abstract class InputValidator {
   abstract validateInput(schema: ValidatorSchema): Promise<this>;
-  abstract getErrors<T>(errorClass: { new (): T }): T | undefined;
+  abstract getErrors<T extends OnError>(errorClass?: {
+    new (): T;
+  }): T | OnError | undefined;
 }

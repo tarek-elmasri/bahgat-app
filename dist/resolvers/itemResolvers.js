@@ -24,9 +24,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const entity_1 = require("../entity");
-const utils_1 = require("../utils");
 const errors_1 = require("../errors");
 const types_1 = require("../types");
+const validators_1 = require("../utils/validators");
 let ItemResolver = class ItemResolver {
     items() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -35,15 +35,20 @@ let ItemResolver = class ItemResolver {
     }
     item(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const item = yield entity_1.Item.findOne({
+            const targetItem = yield entity_1.Item.create({ id }).validateInput(validators_1.uuidSchema);
+            if (targetItem.getErrors())
+                return undefined;
+            return yield entity_1.Item.findOne({
                 where: { id },
-                relations: ["category"],
             });
-            return item;
         });
     }
     createItem(input) {
         return __awaiter(this, void 0, void 0, function* () {
+            const newItem = yield entity_1.Item.create(Object.assign({ categoryId: input.categoryId }, input.fields)).validateInput(validators_1.createItemSchema);
+            const formErrors = newItem.getErrors(types_1.NewItemError);
+            if (formErrors)
+                return { errors: formErrors };
             const category = yield entity_1.Category.findOne({
                 where: { id: input.categoryId },
             });
@@ -54,14 +59,18 @@ let ItemResolver = class ItemResolver {
                     ]),
                 };
             return {
-                payload: yield entity_1.Item.create(Object.assign({ categoryId: input.categoryId }, input.fields)).save(),
+                payload: yield newItem.save(),
             };
         });
     }
     updateItem(input) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id, fields } = input;
-            const item = yield entity_1.Item.findOne({ where: { id } });
+            const targetItem = yield entity_1.Item.create(Object.assign({ id }, fields)).validateInput(validators_1.updateItemSchema);
+            const formErrors = targetItem.getErrors(types_1.UpdateItemErrors);
+            if (formErrors)
+                return { errors: formErrors };
+            const item = yield entity_1.Item.preload(targetItem);
             if (!item)
                 return {
                     errors: new types_1.UpdateItemErrors("NOT_FOUND", "No Itemf matches this ID.", [
@@ -77,9 +86,8 @@ let ItemResolver = class ItemResolver {
                         errors: new types_1.UpdateItemErrors("NOT_FOUND", "No Category found for Category ID Field.", undefined, ["Category not found."]),
                     };
             }
-            const updatedItem = yield utils_1.updateEntity(entity_1.Item, { id }, fields);
             return {
-                payload: updatedItem,
+                payload: yield targetItem.save(),
             };
         });
     }
