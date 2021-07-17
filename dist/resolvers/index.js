@@ -13,6 +13,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./CartResolver"), exports);
 __exportStar(require("./CategoryResolver"), exports);
 __exportStar(require("./itemResolvers"), exports);
-__exportStar(require("./UserResolver"), exports);
 __exportStar(require("./admin_panel"), exports);
 //# sourceMappingURL=index.js.map

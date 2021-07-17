@@ -30,8 +30,8 @@ export class UpdateUserInput {
   @Field(() => String)
   email: string;
 
-  @Field()
-  phoneNo: number;
+  // @Field()
+  // phoneNo: number;
 }
 
 @InputType()
@@ -117,6 +117,15 @@ export class CreateResetPasswordInput {
 
 @InputType()
 export class ResetPasswordInput extends CreateResetPasswordInput {
+  @Field(() => Int)
+  OTP: number;
+}
+
+@InputType()
+export class UpdatePhoneNoInput {
+  @Field()
+  phoneNo: number;
+
   @Field(() => Int)
   OTP: number;
 }

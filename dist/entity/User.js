@@ -39,6 +39,8 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         this.errors = {};
         this.inputErrors = undefined;
         this.uniquenessErrors = false;
+        this.uniquePhoneErrors = false;
+        this.uniqueEmailErrors = false;
         this.validateInput = (schema) => __awaiter(this, void 0, void 0, function* () {
             this.newPassword;
             this.inputErrors = yield validators_1.myValidator(schema, this);
@@ -46,7 +48,10 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
             return this;
         });
         this.getErrors = (errorClass) => {
-            if (this.uniquenessErrors || this.inputErrors)
+            if (this.uniquenessErrors ||
+                this.inputErrors ||
+                this.uniquePhoneErrors ||
+                this.uniqueEmailErrors)
                 return Object.assign(errorClass ? new errorClass() : new errors_1.OnError(), this.errors);
             return undefined;
         };
@@ -109,37 +114,8 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
     }
     validateUniqueness(exception) {
         return __awaiter(this, void 0, void 0, function* () {
-            let user;
-            const validateEmail = () => __awaiter(this, void 0, void 0, function* () {
-                user = yield User_1.findOne({ where: { email: this.email } });
-                if (user) {
-                    this.uniquenessErrors = true;
-                    if ("email" in this.errors) {
-                        this.errors["email"].push("Email already exists.");
-                    }
-                    else {
-                        this.errors["email"] = ["Email already exists."];
-                    }
-                }
-            });
-            if (!exception || (exception && exception.user.email !== this.email))
-                yield validateEmail();
-            const validatePhone = () => __awaiter(this, void 0, void 0, function* () {
-                user = yield User_1.findOne({ where: { phoneNo: this.phoneNo } });
-                if (user) {
-                    this.uniquenessErrors = true;
-                    if ("phoneNo" in this.errors) {
-                        this.errors["phoneNo"].push("Phone No. already exists.");
-                    }
-                    else {
-                        this.errors["phoneNo"] = ["Phone No. already exists."];
-                    }
-                }
-            });
-            if (!exception ||
-                (exception &&
-                    exception.user.phoneNo.toString() !== this.phoneNo.toString()))
-                yield validatePhone();
+            yield this.validateUniqueEmail(exception);
+            yield this.validateUniquePhoneNo(exception);
             return this;
         });
     }
@@ -157,6 +133,46 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         return __awaiter(this, void 0, void 0, function* () {
             return bcryptjs_1.compare(this.password, userPassword);
         });
+    }
+    validateUniquePhoneNo(exception) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!exception ||
+                (exception &&
+                    exception.user.phoneNo.toString() !== this.phoneNo.toString())) {
+                const user = yield User_1.findOne({ where: { phoneNo: this.phoneNo } });
+                if (user) {
+                    this.uniquePhoneErrors = true;
+                    this.pushError({
+                        key: "phoneNo",
+                        message: "Phone No. already exists.",
+                    });
+                }
+            }
+            return this;
+        });
+    }
+    validateUniqueEmail(exception) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!exception || (exception && exception.user.email !== this.email)) {
+                const user = yield User_1.findOne({ where: { email: this.email } });
+                if (user) {
+                    this.uniqueEmailErrors = true;
+                    this.pushError({
+                        key: "email",
+                        message: "Email already exists.",
+                    });
+                }
+            }
+            return this;
+        });
+    }
+    pushError({ key, message }) {
+        if (key in this.errors) {
+            this.errors[key].push(message);
+        }
+        else {
+            this.errors[key] = [message];
+        }
     }
 };
 __decorate([

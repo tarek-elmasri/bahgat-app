@@ -1,15 +1,11 @@
 import { ApolloServer } from "apollo-server-express";
-import {
-  CartResolver,
-  CategoryResolver,
-  ItemResolver,
-  UserResolver,
-} from "../resolvers";
+import { CartResolver, CategoryResolver, ItemResolver } from "../resolvers";
 import { buildSchema } from "type-graphql";
 
 import { itemLoader } from "../loaders/ItemLoader";
 import { cartLoader } from "../loaders/cartLoader";
 import { panel_userResolver } from "../resolvers/admin_panel/panel_userResolver";
+import { userServices } from "../resolvers/user";
 
 export const apolloServerConfig = async (): Promise<ApolloServer> => {
   return new ApolloServer({
@@ -17,7 +13,7 @@ export const apolloServerConfig = async (): Promise<ApolloServer> => {
       resolvers: [
         ItemResolver,
         CategoryResolver,
-        UserResolver,
+        ...userServices,
         CartResolver,
         panel_userResolver,
       ],

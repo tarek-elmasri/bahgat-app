@@ -119,8 +119,8 @@ export class UpdateMeErrors implements OnError {
   @Field(() => [String], { nullable: true })
   username?: string[];
 
-  @Field(() => [String], { nullable: true })
-  phoneNo?: string[];
+  // @Field(() => [String], { nullable: true })
+  // phoneNo?: string[];
 }
 
 @ObjectType()
@@ -227,4 +227,56 @@ export class CreateResetPasswordResponse {
 
   @Field(() => CreateResetPasswordErrors, { nullable: true })
   errors?: CreateResetPasswordErrors;
+}
+
+@ObjectType()
+export class CreateUpdatePhoneNoErrors implements OnError {
+  @Field()
+  code: string;
+  @Field()
+  message: string;
+
+  @Field(() => [String], { nullable: true })
+  phoneNo?: string[];
+
+  constructor(
+    code: string = "INVALID_INPUT-PARAMETERS",
+    message: string = "Invalid Input Parameters",
+    phoneNo?: string[]
+  ) {
+    this.code = code;
+    this.message = message;
+    this.phoneNo = phoneNo;
+  }
+}
+
+@ObjectType()
+export class UpdatePhoneNoErrors extends CreateUpdatePhoneNoErrors {
+  @Field(() => [String], { nullable: true })
+  OTP?: string[];
+
+  constructor(
+    code?: string,
+    message?: string,
+    phoneNo?: string[],
+    OTP?: string[]
+  ) {
+    super(code, message, phoneNo);
+    this.OTP = OTP;
+  }
+}
+
+@ObjectType()
+export class CreateUpdatePhoneNoResponse {
+  @Field(() => OTP_Response, { nullable: true })
+  payload?: OTP_Response;
+
+  @Field(() => CreateUpdatePhoneNoErrors, { nullable: true })
+  errors?: CreateUpdatePhoneNoErrors;
+}
+
+@ObjectType()
+export class UpdatePhoneNoResponse extends CreateUpdatePhoneNoResponse {
+  @Field(() => UpdatePhoneNoErrors, { nullable: true })
+  errors?: UpdatePhoneNoErrors;
 }

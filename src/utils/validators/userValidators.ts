@@ -81,7 +81,10 @@ export const createRegistrationSchema = { username, email, password, phoneNo };
 //   return undefined;
 // };
 
-export const updateMeSchema = { username, email, phoneNo };
+export const updateMeSchema = { username, email };
 // export const updateMeValidator = (input: UpdateUserInput) => {
 //   return myValidator(updateMeSchema, input, UpdateMeErrors);
 // };
+
+export const createUpdatePhoneNoSchema = { phoneNo };
+export const updatePhoneNoSchema = { phoneNo, OTP };

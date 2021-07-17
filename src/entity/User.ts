@@ -125,6 +125,8 @@ export class User extends BaseEntity implements InputValidator {
   private errors: { [key: string]: string[] } = {};
   private inputErrors: { [key: string]: string[] } | undefined = undefined;
   private uniquenessErrors: boolean = false;
+  private uniquePhoneErrors: boolean = false;
+  private uniqueEmailErrors: boolean = false;
   private newPassword: string;
   setOTP(OTP: number) {
     this.OTP = OTP;
@@ -151,45 +153,50 @@ export class User extends BaseEntity implements InputValidator {
   };
 
   async validateUniqueness(exception?: { user: User }) {
-    let user: User | undefined;
+    // let user: User | undefined;
 
-    const validateEmail = async () => {
-      user = await User.findOne({ where: { email: this.email } });
-      if (user) {
-        this.uniquenessErrors = true;
-        if ("email" in this.errors) {
-          this.errors["email"].push("Email already exists.");
-        } else {
-          this.errors["email"] = ["Email already exists."];
-        }
-      }
-    };
-    if (!exception || (exception && exception.user.email !== this.email))
-      await validateEmail();
+    // const validateEmail = async () => {
+    //   user = await User.findOne({ where: { email: this.email } });
+    //   if (user) {
+    //     this.uniquenessErrors = true;
+    //     if ("email" in this.errors) {
+    //       this.errors["email"].push("Email already exists.");
+    //     } else {
+    //       this.errors["email"] = ["Email already exists."];
+    //     }
+    //   }
+    // };
+    // if (!exception || (exception && exception.user.email !== this.email))
+    await this.validateUniqueEmail(exception);
 
-    const validatePhone = async () => {
-      user = await User.findOne({ where: { phoneNo: this.phoneNo } });
-      if (user) {
-        this.uniquenessErrors = true;
-        if ("phoneNo" in this.errors) {
-          this.errors["phoneNo"].push("Phone No. already exists.");
-        } else {
-          this.errors["phoneNo"] = ["Phone No. already exists."];
-        }
-      }
-    };
+    // const validatePhone = async () => {
+    //   user = await User.findOne({ where: { phoneNo: this.phoneNo } });
+    //   if (user) {
+    //     this.uniquenessErrors = true;
+    //     if ("phoneNo" in this.errors) {
+    //       this.errors["phoneNo"].push("Phone No. already exists.");
+    //     } else {
+    //       this.errors["phoneNo"] = ["Phone No. already exists."];
+    //     }
+    //   }
+    // // };
 
-    if (
-      !exception ||
-      (exception &&
-        exception.user.phoneNo.toString() !== this.phoneNo.toString())
-    )
-      await validatePhone();
+    // if (
+    //   !exception ||
+    //   (exception &&
+    //     exception.user.phoneNo.toString() !== this.phoneNo.toString())
+    // )
+    await this.validateUniquePhoneNo(exception);
     return this;
   }
 
   getErrors = <T>(errorClass?: { new (): T }): T | OnError | undefined => {
-    if (this.uniquenessErrors || this.inputErrors)
+    if (
+      this.uniquenessErrors ||
+      this.inputErrors ||
+      this.uniquePhoneErrors ||
+      this.uniqueEmailErrors
+    )
       return Object.assign(
         errorClass ? new errorClass() : new OnError(),
         this.errors
@@ -260,5 +267,45 @@ export class User extends BaseEntity implements InputValidator {
 
   async isPasswordMatch(userPassword: string) {
     return compare(this.password, userPassword);
+  }
+
+  async validateUniquePhoneNo(exception?: { user: User }) {
+    if (
+      !exception ||
+      (exception &&
+        exception.user.phoneNo.toString() !== this.phoneNo.toString())
+    ) {
+      const user = await User.findOne({ where: { phoneNo: this.phoneNo } });
+      if (user) {
+        this.uniquePhoneErrors = true;
+        this.pushError({
+          key: "phoneNo",
+          message: "Phone No. already exists.",
+        });
+      }
+    }
+    return this;
+  }
+
+  async validateUniqueEmail(exception?: { user: User }) {
+    if (!exception || (exception && exception.user.email !== this.email)) {
+      const user = await User.findOne({ where: { email: this.email } });
+      if (user) {
+        this.uniqueEmailErrors = true;
+        this.pushError({
+          key: "email",
+          message: "Email already exists.",
+        });
+      }
+    }
+    return this;
+  }
+
+  private pushError({ key, message }: { key: string; message: string }) {
+    if (key in this.errors) {
+      this.errors[key].push(message);
+    } else {
+      this.errors[key] = [message];
+    }
   }
 }

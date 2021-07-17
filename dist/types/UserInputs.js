@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ResetPasswordInput = exports.CreateResetPasswordInput = exports.LoginInput = exports.CreateLoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.RegisterInput = exports.CreateRegistrationInput = void 0;
+exports.UpdatePhoneNoInput = exports.ResetPasswordInput = exports.CreateResetPasswordInput = exports.LoginInput = exports.CreateLoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.RegisterInput = exports.CreateRegistrationInput = void 0;
 const type_graphql_1 = require("type-graphql");
 const Role_1 = require("./Role");
 let CreateRegistrationInput = class CreateRegistrationInput {
@@ -54,10 +54,6 @@ __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], UpdateUserInput.prototype, "email", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], UpdateUserInput.prototype, "phoneNo", void 0);
 UpdateUserInput = __decorate([
     type_graphql_1.InputType()
 ], UpdateUserInput);
@@ -190,4 +186,18 @@ ResetPasswordInput = __decorate([
     type_graphql_1.InputType()
 ], ResetPasswordInput);
 exports.ResetPasswordInput = ResetPasswordInput;
+let UpdatePhoneNoInput = class UpdatePhoneNoInput {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], UpdatePhoneNoInput.prototype, "phoneNo", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int),
+    __metadata("design:type", Number)
+], UpdatePhoneNoInput.prototype, "OTP", void 0);
+UpdatePhoneNoInput = __decorate([
+    type_graphql_1.InputType()
+], UpdatePhoneNoInput);
+exports.UpdatePhoneNoInput = UpdatePhoneNoInput;
 //# sourceMappingURL=UserInputs.js.map
