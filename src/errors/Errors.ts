@@ -45,8 +45,16 @@ export class InvalidUuidSyntaxError implements OnError {
 //   }
 // }
 
-export class UnAuthorizedError extends ApolloError {
-  constructor(message: string, extension?: Record<string, any>) {
-    super(message, "UNAUTHORIZED", extension);
+export class BadRequestError extends ApolloError {
+  constructor(
+    message: string = "Bad Request",
+    extension?: Record<string, any>
+  ) {
+    super(message, "BAD_REQUEST", extension);
   }
 }
+// export class UnAuthorizedError extends ApolloError {
+//   constructor(message: string, extension?: Record<string, any>) {
+//     super(message, "UNAUTHORIZED", extension);
+//   }
+// }

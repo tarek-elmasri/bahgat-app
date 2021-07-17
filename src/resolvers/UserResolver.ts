@@ -1,14 +1,7 @@
 import { PhoneVerification, User } from "../entity";
 import { syncCart } from "../utils";
 import { OnError } from "../errors";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  Query,
-  Resolver,
-  UseMiddleware,
-} from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import {
   RegisterInput,
   UpdateUserInput,
@@ -38,7 +31,7 @@ import {
   updateSession,
   isGuest,
   deleteSession,
-  isAuthenticated,
+  CurrentUser,
 } from "../middlewares";
 import {
   createLoginSchema,
@@ -60,7 +53,7 @@ export class UserResolver {
   }
 
   @Mutation(() => CreateLoginResponse)
-  @UseMiddleware(isGuest)
+  @isGuest()
   async createLogin(
     @Arg("input") input: CreateLoginInput
   ): Promise<CreateLoginResponse> {
@@ -84,7 +77,7 @@ export class UserResolver {
   }
 
   @Mutation(() => LoginResponse)
-  @UseMiddleware(isGuest)
+  @isGuest()
   async login(
     @Arg("input") credentials: LoginInput,
     @Ctx() { req, res }: MyContext
@@ -127,7 +120,7 @@ export class UserResolver {
   }
 
   @Mutation(() => CreateRegisterationResponse)
-  //@UseMiddleware(isGuest)
+  @isGuest()
   async createRegistration(
     @Arg("input") input: CreateRegistrationInput
   ): Promise<CreateRegisterationResponse> {
@@ -180,7 +173,7 @@ export class UserResolver {
   }
 
   @Mutation(() => RegisterResponse)
-  @UseMiddleware(isGuest)
+  @isGuest()
   async register(
     @Arg("input") input: RegisterInput,
     @Ctx() { req, res }: MyContext
@@ -229,7 +222,7 @@ export class UserResolver {
   }
 
   @Mutation(() => UpdateMeResponse)
-  @UseMiddleware(isAuthenticated)
+  @CurrentUser()
   async updateMe(
     @Arg("input", () => UpdateUserInput) input: UpdateUserInput,
     @Ctx() { req }: MyContext
@@ -255,13 +248,14 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
+  @CurrentUser()
   async LogOut(@Ctx() { req }: MyContext) {
     await deleteSession(req.session);
     return true;
   }
 
   @Mutation(() => CreateResetPasswordResponse)
-  //@UseMiddleware(isAuthenticated)
+  @CurrentUser()
   async createResetPassword(
     @Arg("input") input: CreateResetPasswordInput,
     @Ctx() { req }: MyContext
@@ -300,7 +294,7 @@ export class UserResolver {
   }
 
   @Mutation(() => ResetPasswordResponse)
-  //@UseMiddleware(isAuthenticated)
+  @CurrentUser()
   async resetPassword(
     @Arg("input") input: ResetPasswordInput,
     @Ctx() { req, res }: MyContext

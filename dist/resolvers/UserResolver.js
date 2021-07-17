@@ -225,7 +225,7 @@ __decorate([
 ], UserResolver.prototype, "me", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CreateLoginResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isGuest),
+    middlewares_1.isGuest(),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.CreateLoginInput]),
@@ -233,7 +233,7 @@ __decorate([
 ], UserResolver.prototype, "createLogin", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.LoginResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isGuest),
+    middlewares_1.isGuest(),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -242,6 +242,7 @@ __decorate([
 ], UserResolver.prototype, "login", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CreateRegisterationResponse),
+    middlewares_1.isGuest(),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.CreateRegistrationInput]),
@@ -249,7 +250,7 @@ __decorate([
 ], UserResolver.prototype, "createRegistration", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.RegisterResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isGuest),
+    middlewares_1.isGuest(),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -258,7 +259,7 @@ __decorate([
 ], UserResolver.prototype, "register", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateMeResponse),
-    type_graphql_1.UseMiddleware(middlewares_1.isAuthenticated),
+    middlewares_1.CurrentUser(),
     __param(0, type_graphql_1.Arg("input", () => types_1.UpdateUserInput)),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -267,6 +268,7 @@ __decorate([
 ], UserResolver.prototype, "updateMe", null);
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
+    middlewares_1.CurrentUser(),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -274,6 +276,7 @@ __decorate([
 ], UserResolver.prototype, "LogOut", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CreateResetPasswordResponse),
+    middlewares_1.CurrentUser(),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -282,6 +285,7 @@ __decorate([
 ], UserResolver.prototype, "createResetPassword", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.ResetPasswordResponse),
+    middlewares_1.CurrentUser(),
     __param(0, type_graphql_1.Arg("input")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),

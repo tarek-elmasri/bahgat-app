@@ -9,35 +9,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAuthenticated = exports.isGuest = exports.isAuthorized = void 0;
+exports.CurrentUser = exports.isGuest = exports.isAuthorized = void 0;
 const types_1 = require("../types");
-const errors_1 = require("../errors");
+const type_graphql_1 = require("type-graphql");
 const Errors_1 = require("../errors/Errors");
-const isAuthorized = (keys) => ({ context }, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { user } = context.req;
-    const role = (user === null || user === void 0 ? void 0 : user.role) || types_1.Role.GUEST;
-    if (role === types_1.Role.ADMIN)
+const apollo_server_express_1 = require("apollo-server-express");
+function isAuthorized(keys) {
+    return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
+        const { user } = context.req;
+        const role = (user === null || user === void 0 ? void 0 : user.role) || types_1.Role.GUEST;
+        if (role === types_1.Role.ADMIN)
+            return next();
+        if (role === types_1.Role.GUEST || !(user === null || user === void 0 ? void 0 : user.authorization))
+            throw new apollo_server_express_1.ForbiddenError("Access denied! You need to be authorized to perform this action!");
+        let reqAuth = Object.assign({}, user.authorization);
+        keys.map((key) => {
+            if (!reqAuth[key])
+                throw new apollo_server_express_1.ForbiddenError("Access denied! You need to be authorized to perform this action!");
+        });
         return next();
-    if (role === types_1.Role.GUEST || !(user === null || user === void 0 ? void 0 : user.authorization))
-        throw new Errors_1.UnAuthorizedError("Unauthorized Request");
-    let reqAuth = Object.assign({}, user.authorization);
-    keys.map((key) => {
-        if (!reqAuth[key])
-            throw new Errors_1.UnAuthorizedError("Unauthorized Request");
-    });
-    return next();
-});
+    }));
+}
 exports.isAuthorized = isAuthorized;
-const isGuest = ({ context }, next) => {
-    if (context.req.user)
-        throw new errors_1.Err(errors_1.ErrCode.INVALID_ACTION, "User already logged in.");
-    return next();
-};
+function isGuest() {
+    return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
+        if (context.req.user)
+            throw new Errors_1.BadRequestError("User already logged in.");
+        return next();
+    }));
+}
 exports.isGuest = isGuest;
-const isAuthenticated = ({ context }, next) => {
-    if (!context.req.user)
-        throw new errors_1.Err(errors_1.ErrCode.INVALID_ACTION, "Not Logged In.");
-    return next();
-};
-exports.isAuthenticated = isAuthenticated;
+function CurrentUser() {
+    return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
+        if (!context.req.user)
+            throw new apollo_server_express_1.ForbiddenError("Access denied! You need to be authorized to perform this action!");
+        return next();
+    }));
+}
+exports.CurrentUser = CurrentUser;
 //# sourceMappingURL=authorization.js.map

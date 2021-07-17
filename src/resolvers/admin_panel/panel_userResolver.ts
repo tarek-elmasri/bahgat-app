@@ -5,7 +5,7 @@ import {
   PayloadResponse,
   SuccessResponse,
 } from "../../types";
-import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import { getConnection } from "typeorm";
 import { Authorization } from "../../entity";
@@ -22,7 +22,7 @@ mutations:
 @Resolver()
 export class panel_userResolver {
   @Query(() => PayloadResponse)
-  @UseMiddleware(isAuthorized(["viewAllUsers"]))
+  @isAuthorized(["viewAllUsers"])
   async panel_user(@Arg("id") id: string): Promise<PayloadResponse> {
     try {
       const user = await User.findOne({
@@ -39,7 +39,7 @@ export class panel_userResolver {
   }
 
   @Query(() => [User])
-  @UseMiddleware(isAuthorized(["viewAllUsers"]))
+  @isAuthorized(["viewAllUsers"])
   async panel_users(): Promise<User[]> {
     return await User.find();
   }
@@ -50,7 +50,7 @@ export class panel_userResolver {
   // }
 
   @Mutation(() => PayloadResponse)
-  @UseMiddleware(isAuthorized(["updateUser"]))
+  @isAuthorized(["updateUser"])
   async panel_updateUser(
     @Arg("properties", () => PanelUpdateUserInput)
     { id, fields, authorization }: PanelUpdateUserInput
@@ -102,7 +102,7 @@ export class panel_userResolver {
   }
 
   @Mutation(() => SuccessResponse)
-  @UseMiddleware(isAuthorized(["deleteUser"]))
+  @isAuthorized(["deleteUser"])
   async panel_deleteUser(@Arg("id") id: string): Promise<SuccessResponse> {
     try {
       const result = await User.delete({ id });

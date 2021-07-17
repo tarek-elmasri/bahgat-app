@@ -22,6 +22,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryResolver = void 0;
+const middlewares_1 = require("../middlewares");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const entity_1 = require("../entity");
@@ -102,6 +103,7 @@ __decorate([
 ], CategoryResolver.prototype, "category", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CreateCategoryResponse),
+    middlewares_1.isAuthorized(["addCategory"]),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.NewCategoryInput]),
@@ -109,6 +111,7 @@ __decorate([
 ], CategoryResolver.prototype, "createCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateCategoryResponse),
+    middlewares_1.isAuthorized(["updateCategory"]),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.UpdateCategoryInput]),
@@ -116,6 +119,7 @@ __decorate([
 ], CategoryResolver.prototype, "updateCategory", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
+    middlewares_1.isAuthorized(["deleteCategory"]),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.DeleteCategoryInput]),

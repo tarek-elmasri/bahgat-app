@@ -22,6 +22,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemResolver = void 0;
+const middlewares_1 = require("../middlewares");
 const type_graphql_1 = require("type-graphql");
 const entity_1 = require("../entity");
 const errors_1 = require("../errors");
@@ -73,7 +74,7 @@ let ItemResolver = class ItemResolver {
             const item = yield entity_1.Item.preload(targetItem);
             if (!item)
                 return {
-                    errors: new types_1.UpdateItemErrors("NOT_FOUND", "No Itemf matches this ID.", [
+                    errors: new types_1.UpdateItemErrors("NOT_FOUND", "No Item matches this ID.", [
                         "No Item matches this ID.",
                     ]),
                 };
@@ -122,6 +123,7 @@ __decorate([
 ], ItemResolver.prototype, "item", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.CreateItemResponse),
+    middlewares_1.isAuthorized(["addItem"]),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.newItemInput]),
@@ -129,6 +131,7 @@ __decorate([
 ], ItemResolver.prototype, "createItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.UpdateItemResponse),
+    middlewares_1.isAuthorized(["updateItem"]),
     __param(0, type_graphql_1.Arg("input")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [types_1.updateItemInput]),
@@ -136,6 +139,7 @@ __decorate([
 ], ItemResolver.prototype, "updateItem", null);
 __decorate([
     type_graphql_1.Mutation(() => types_1.SuccessResponse),
+    middlewares_1.isAuthorized(["deleteItem"]),
     __param(0, type_graphql_1.Arg("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

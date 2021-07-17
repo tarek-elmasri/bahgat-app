@@ -1,4 +1,5 @@
 //import { ValidationError } from "apollo-server-express";
+import { isAuthorized } from "../middlewares";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { Item, Category } from "../entity";
 import { ErrCode, Err } from "../errors";
@@ -16,12 +17,6 @@ import {
   updateItemSchema,
   uuidSchema,
 } from "../utils/validators";
-//import { isAuthorized } from "../middlewares";
-// import {
-//   //UuidValidator,
-//   createItemValidator,
-//   updateItemValidator,
-// } from "../utils/validators";
 
 @Resolver()
 export class ItemResolver {
@@ -41,7 +36,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => CreateItemResponse)
-  //@UseMiddleware(isAuthorized(["addItem"]))
+  @isAuthorized(["addItem"])
   async createItem(
     @Arg("input") input: newItemInput
   ): Promise<CreateItemResponse> {
@@ -70,7 +65,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => UpdateItemResponse)
-  //@UseMiddleware(isAuthorized(["updateItem"]))
+  @isAuthorized(["updateItem"])
   async updateItem(
     @Arg("input") input: updateItemInput
   ): Promise<UpdateItemResponse> {
@@ -86,7 +81,7 @@ export class ItemResolver {
     const item = await Item.preload(targetItem);
     if (!item)
       return {
-        errors: new UpdateItemErrors("NOT_FOUND", "No Itemf matches this ID.", [
+        errors: new UpdateItemErrors("NOT_FOUND", "No Item matches this ID.", [
           "No Item matches this ID.",
         ]),
       };
@@ -113,7 +108,7 @@ export class ItemResolver {
   }
 
   @Mutation(() => SuccessResponse)
-  //@UseMiddleware(isAuthorized(["deleteItem"]))
+  @isAuthorized(["deleteItem"])
   async deleteItem(@Arg("id") id: string): Promise<SuccessResponse> {
     try {
       const deleted = await Item.delete({ id });

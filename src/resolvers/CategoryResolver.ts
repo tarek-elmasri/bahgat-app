@@ -1,3 +1,4 @@
+import { isAuthorized } from "../middlewares";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { getConnection } from "typeorm";
 import { Category } from "../entity";
@@ -12,12 +13,6 @@ import {
   UpdateCategoryErrors,
   CreateCategoryErrors,
 } from "../types";
-// import {
-//   createCategoryValidator,
-//   updateCategoryValidator,
-// } from "../utils/validators";
-//import { ValidationError } from "apollo-server-express";
-//import { updateEntity } from "../utils";
 import {
   newCategorySchema,
   updateCategorySchema,
@@ -44,7 +39,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CreateCategoryResponse)
-  //@UseMiddleware(isAuthorized(["addCategory"]))
+  @isAuthorized(["addCategory"])
   async createCategory(
     @Arg("input") input: NewCategoryInput
   ): Promise<CreateCategoryResponse> {
@@ -58,7 +53,7 @@ export class CategoryResolver {
   }
 
   @Mutation(() => UpdateCategoryResponse)
-  //@UseMiddleware(isAuthorized(["updateCategory"]))
+  @isAuthorized(["updateCategory"])
   async updateCategory(
     @Arg("input") input: UpdateCategoryInput
   ): Promise<UpdateCategoryResponse> {
@@ -84,7 +79,7 @@ export class CategoryResolver {
 
   // TODO: implement new response structure
   @Mutation(() => SuccessResponse)
-  //@UseMiddleware(isAuthorized(["deleteCategory"]))
+  @isAuthorized(["deleteCategory"])
   async deleteCategory(
     @Arg("input") { id, saveDelete }: DeleteCategoryInput
   ): Promise<SuccessResponse> {
