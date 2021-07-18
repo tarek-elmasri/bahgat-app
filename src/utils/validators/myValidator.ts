@@ -1,4 +1,4 @@
-import { InvalidUuidSyntaxError, OnError } from "../../errors";
+import { OnError } from "../../errors";
 import * as yup from "yup";
 import { ValidationError } from "yup";
 import { ValidatorSchema } from "../../types";
@@ -9,13 +9,6 @@ export const uuidV4 = yup
   .uuid("Invalid UUID Syntax.");
 
 export const uuidSchema = { id: uuidV4 };
-export const UuidValidator = async (input: { id: string }) => {
-  const uuidValidator = { id: uuidV4 };
-  return Object.assign(
-    new InvalidUuidSyntaxError(),
-    await myValidator(uuidValidator, input)
-  );
-};
 
 export const myValidator = async <T>(
   schema: any,
@@ -28,19 +21,6 @@ export const myValidator = async <T>(
     .then((_) => undefined)
     .catch((err) => formatError(err));
 };
-
-// export const myValidator = async <InputType, ErrorType>(
-//   schema: any,
-//   input: InputType,
-//   errorClass: { new (): ErrorType }
-// ): Promise<ErrorType | undefined> => {
-//   return yup
-//     .object()
-//     .shape(schema)
-//     .validate(input, { abortEarly: false })
-//     .then((_) => undefined)
-//     .catch((err) => Object.assign(new errorClass(), formatError(err)));
-// };
 
 const formatError = (err: any) => {
   let result: { [key: string]: string[] } = {};
@@ -61,3 +41,24 @@ export abstract class InputValidator {
     new (): T;
   }): T | OnError | undefined;
 }
+
+// export const myValidator = async <InputType, ErrorType>(
+//   schema: any,
+//   input: InputType,
+//   errorClass: { new (): ErrorType }
+// ): Promise<ErrorType | undefined> => {
+//   return yup
+//     .object()
+//     .shape(schema)
+//     .validate(input, { abortEarly: false })
+//     .then((_) => undefined)
+//     .catch((err) => Object.assign(new errorClass(), formatError(err)));
+// };
+
+// export const UuidValidator = async (input: { id: string }) => {
+//   const uuidValidator = { id: uuidV4 };
+//   return Object.assign(
+//     new InvalidUuidSyntaxError(),
+//     await myValidator(uuidValidator, input)
+//   );
+// };

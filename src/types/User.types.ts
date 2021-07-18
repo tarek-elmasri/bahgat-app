@@ -280,3 +280,57 @@ export class UpdatePhoneNoResponse extends CreateUpdatePhoneNoResponse {
   @Field(() => UpdatePhoneNoErrors, { nullable: true })
   errors?: UpdatePhoneNoErrors;
 }
+
+@ObjectType()
+export class CreateForgetPasswordErrors implements OnError {
+  @Field()
+  code: string;
+  @Field()
+  message: string;
+  @Field(() => [String], { nullable: true })
+  newPassword?: string[];
+  @Field(() => [String], { nullable: true })
+  phoneNo?: string[];
+
+  constructor(
+    code: string = "INVALID_INPUT_PARAMETERS",
+    message: string = "Invalid Input Parameters",
+    newPassword?: string[],
+    phoneNo?: string[]
+  ) {
+    this.code = code;
+    this.message = message;
+    this.phoneNo = phoneNo;
+    this.newPassword = newPassword;
+  }
+}
+
+@ObjectType()
+export class ForgetPasswordErrors extends CreateForgetPasswordErrors {
+  @Field(() => [String], { nullable: true })
+  OTP?: string[];
+  constructor(
+    code?: string,
+    message?: string,
+    phoneNo?: string[],
+    newPassword?: string[],
+    OTP?: string[]
+  ) {
+    super(code, message, newPassword, phoneNo);
+    this.OTP = OTP;
+  }
+}
+
+@ObjectType()
+export class CreateForgetPasswordResponse {
+  @Field(() => OTP_Response, { nullable: true })
+  payload?: OTP_Response;
+  @Field(() => CreateForgetPasswordErrors, { nullable: true })
+  errors?: CreateForgetPasswordErrors;
+}
+
+@ObjectType()
+export class ForgetPasswordResponse extends CreateForgetPasswordResponse {
+  @Field(() => ForgetPasswordErrors, { nullable: true })
+  errors?: ForgetPasswordErrors;
+}

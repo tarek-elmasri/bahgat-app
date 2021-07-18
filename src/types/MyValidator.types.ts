@@ -1,9 +1,11 @@
 import {
+  createForgetPasswordSchema,
   createItemSchema,
   createLoginSchema,
   createRegistrationSchema,
   createResetPasswordSchema,
   createUpdatePhoneNoSchema,
+  forgetPasswordSchema,
   loginSchema,
   newCategorySchema,
   registerSchema,
@@ -42,4 +44,6 @@ export type ValidatorSchema =
   | typeof createResetPasswordSchema
   | typeof resetPasswordSchema
   | typeof createUpdatePhoneNoSchema
-  | typeof updatePhoneNoSchema;
+  | typeof updatePhoneNoSchema
+  | typeof createForgetPasswordSchema
+  | typeof forgetPasswordSchema;

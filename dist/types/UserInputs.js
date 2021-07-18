@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdatePhoneNoInput = exports.ResetPasswordInput = exports.CreateResetPasswordInput = exports.LoginInput = exports.CreateLoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.RegisterInput = exports.CreateRegistrationInput = void 0;
+exports.ForgetPasswordInput = exports.CreateForgetPasswordInput = exports.UpdatePhoneNoInput = exports.ResetPasswordInput = exports.CreateResetPasswordInput = exports.LoginInput = exports.CreateLoginInput = exports.PanelUpdateUserInput = exports.UpdateUserInput = exports.RegisterInput = exports.CreateRegistrationInput = void 0;
 const type_graphql_1 = require("type-graphql");
 const Role_1 = require("./Role");
 let CreateRegistrationInput = class CreateRegistrationInput {
@@ -200,4 +200,28 @@ UpdatePhoneNoInput = __decorate([
     type_graphql_1.InputType()
 ], UpdatePhoneNoInput);
 exports.UpdatePhoneNoInput = UpdatePhoneNoInput;
+let CreateForgetPasswordInput = class CreateForgetPasswordInput {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CreateForgetPasswordInput.prototype, "newPassword", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], CreateForgetPasswordInput.prototype, "phoneNo", void 0);
+CreateForgetPasswordInput = __decorate([
+    type_graphql_1.InputType()
+], CreateForgetPasswordInput);
+exports.CreateForgetPasswordInput = CreateForgetPasswordInput;
+let ForgetPasswordInput = class ForgetPasswordInput extends CreateForgetPasswordInput {
+};
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int),
+    __metadata("design:type", Number)
+], ForgetPasswordInput.prototype, "OTP", void 0);
+ForgetPasswordInput = __decorate([
+    type_graphql_1.InputType()
+], ForgetPasswordInput);
+exports.ForgetPasswordInput = ForgetPasswordInput;
 //# sourceMappingURL=UserInputs.js.map

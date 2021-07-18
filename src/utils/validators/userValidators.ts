@@ -88,3 +88,5 @@ export const updateMeSchema = { username, email };
 
 export const createUpdatePhoneNoSchema = { phoneNo };
 export const updatePhoneNoSchema = { phoneNo, OTP };
+export const createForgetPasswordSchema = { newPassword: password, phoneNo };
+export const forgetPasswordSchema = { newPassword: password, phoneNo, OTP };

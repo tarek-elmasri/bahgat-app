@@ -1,7 +1,7 @@
 import { MyContext, Role } from "../types";
 import { createMethodDecorator } from "type-graphql";
 import { BadRequestError } from "../errors/Errors";
-import { ForbiddenError } from "apollo-server-express";
+import { AuthenticationError, ForbiddenError } from "apollo-server-express";
 
 type AuthorizationType =
   | "viewAllUsers"
@@ -48,8 +48,8 @@ export function isGuest() {
 export function CurrentUser() {
   return createMethodDecorator<MyContext>(async ({ context }, next) => {
     if (!context.req.user)
-      throw new ForbiddenError(
-        "Access denied! You need to be authorized to perform this action!"
+      throw new AuthenticationError(
+        "Access denied! You need to be logged in to perform this action!"
       );
     return next();
   });

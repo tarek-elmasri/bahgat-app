@@ -43,4 +43,26 @@ export class UserBaseServices {
       },
     };
   };
+
+  protected async getOtpRequestErrors(phoneNo: number, OTP: number) {
+    // find the phone verification for otp
+    const verifiedPhone = await PhoneVerification.findOne({
+      where: { phoneNo },
+    });
+
+    if (!verifiedPhone)
+      return {
+        code: "NOT_FOUND",
+        message: "No user found for this phoneNo.",
+      };
+
+    // isValidOtp validates OTP match and not expired
+    if (!verifiedPhone!.isValidOTP(OTP))
+      return {
+        code: "INVALID_OTP",
+        message: "Expired or Invalid OTP Match.",
+      };
+
+    return undefined;
+  }
 }

@@ -129,3 +129,18 @@ export class UpdatePhoneNoInput {
   @Field(() => Int)
   OTP: number;
 }
+
+@InputType()
+export class CreateForgetPasswordInput {
+  @Field()
+  newPassword: string;
+
+  @Field()
+  phoneNo: number;
+}
+
+@InputType()
+export class ForgetPasswordInput extends CreateForgetPasswordInput {
+  @Field(() => Int)
+  OTP: number;
+}

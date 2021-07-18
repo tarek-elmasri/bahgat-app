@@ -59,7 +59,6 @@ export const sessionBuilder: mwFn = async (req, res, next) => {
   // no session in db (** in case deleting all sessions to force logging out)--> create new session
   if (!session) {
     session = await createSession(req, res);
-    console.log("no session i database");
     return next();
   }
 

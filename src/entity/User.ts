@@ -134,59 +134,16 @@ export class User extends BaseEntity implements InputValidator {
   }
   validateInput = async (schema: ValidatorSchema) => {
     this.newPassword;
-    this.inputErrors = await myValidator<User>(
-      schema,
-      //   {
-      //   id: this.id,
-      //   username: this.username,
-      //   email: this.email,
-      //   password: this.password,
-      //   phoneNo: this.phoneNo,
-      //   OTP: this.OTP,
-      //   newPassword: this.newPassword,
-      // }
-      this
-    );
+    this.inputErrors = await myValidator<User>(schema, this);
     this.errors = Object.assign(this.errors, this.inputErrors);
 
     return this;
   };
 
   async validateUniqueness(exception?: { user: User }) {
-    // let user: User | undefined;
-
-    // const validateEmail = async () => {
-    //   user = await User.findOne({ where: { email: this.email } });
-    //   if (user) {
-    //     this.uniquenessErrors = true;
-    //     if ("email" in this.errors) {
-    //       this.errors["email"].push("Email already exists.");
-    //     } else {
-    //       this.errors["email"] = ["Email already exists."];
-    //     }
-    //   }
-    // };
-    // if (!exception || (exception && exception.user.email !== this.email))
     await this.validateUniqueEmail(exception);
-
-    // const validatePhone = async () => {
-    //   user = await User.findOne({ where: { phoneNo: this.phoneNo } });
-    //   if (user) {
-    //     this.uniquenessErrors = true;
-    //     if ("phoneNo" in this.errors) {
-    //       this.errors["phoneNo"].push("Phone No. already exists.");
-    //     } else {
-    //       this.errors["phoneNo"] = ["Phone No. already exists."];
-    //     }
-    //   }
-    // // };
-
-    // if (
-    //   !exception ||
-    //   (exception &&
-    //     exception.user.phoneNo.toString() !== this.phoneNo.toString())
-    // )
     await this.validateUniquePhoneNo(exception);
+
     return this;
   }
 
@@ -205,8 +162,7 @@ export class User extends BaseEntity implements InputValidator {
     return undefined;
   };
 
-  //auth function
-
+  //auth function returns user if valid auth or undefined on invalid credentials
   auth = async (
     options: { validateOTP: boolean } = { validateOTP: false }
   ): Promise<User | undefined> => {
@@ -241,6 +197,7 @@ export class User extends BaseEntity implements InputValidator {
     });
     if (!phoneVerification)
       throw new ApolloError(
+        // user supposed to have phone no.
         "Server can't perform  phone verification at this moment"
       );
 
@@ -255,6 +212,7 @@ export class User extends BaseEntity implements InputValidator {
     return phoneVerification.sendOTP();
   };
 
+  // hashes password and save
   async register() {
     this.password = await hash(this.password, 12);
     return this.save();

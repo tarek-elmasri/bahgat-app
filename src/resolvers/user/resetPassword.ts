@@ -1,6 +1,6 @@
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
 import { UserBaseServices } from "./userBaseServices";
-import { PhoneVerification, User } from "../../entity";
+import { User } from "../../entity";
 import { CurrentUser, updateSession } from "../../middlewares";
 import {
   CreateResetPasswordErrors,
@@ -81,21 +81,31 @@ export class ResetPassword extends UserBaseServices {
         ),
       };
 
-    // find the phone verification for otp
-    const verifiedPhone = await PhoneVerification.findOne({
-      where: { phoneNo: user!.phoneNo },
-    });
+    // // find the phone verification for otp
+    // const verifiedPhone = await PhoneVerification.findOne({
+    //   where: { phoneNo: user!.phoneNo },
+    // });
 
-    // isValidOtp validates OTP match and not expired
-    if (!verifiedPhone!.isValidOTP(input.OTP))
+    // // isValidOtp validates OTP match and not expired
+    // if (!verifiedPhone!.isValidOTP(input.OTP))
+    //   return {
+    //     errors: new ResetPasswordErrors(
+    //       "INVALID_OTP",
+    //       "Invalid OTP Match.",
+    //       undefined,
+    //       undefined,
+    //       ["Invalid or expired OTP."]
+    //     ),
+    //   };
+
+    const otpErrors = await this.getOtpRequestErrors(user!.phoneNo, input.OTP);
+    if (otpErrors)
       return {
-        errors: new ResetPasswordErrors(
-          "INVALID_OTP",
-          "Invalid OTP Match.",
-          undefined,
-          undefined,
-          ["Invalid or expired OTP."]
-        ),
+        errors: {
+          code: otpErrors.code,
+          message: otpErrors.message,
+          OTP: ["Expired or Invalid OTP match."],
+        },
       };
 
     user!.password = input.newPassword;

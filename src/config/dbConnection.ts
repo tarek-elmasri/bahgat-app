@@ -1,12 +1,16 @@
-import { __producation__ } from "../types";
+import {
+  DATABASE_PASSWORD,
+  DATABASE_USERNAME,
+  __producation__,
+} from "../types";
 import { ConnectionOptions } from "typeorm";
 
 export const dbConnection: ConnectionOptions = {
   type: "postgres",
   host: "localhost",
   port: 5432,
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
+  username: DATABASE_USERNAME,
+  password: DATABASE_PASSWORD,
   database: "shopping_app",
   synchronize: !__producation__,
   logging: !__producation__,

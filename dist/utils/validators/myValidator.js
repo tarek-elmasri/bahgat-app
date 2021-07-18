@@ -28,19 +28,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InputValidator = exports.myValidator = exports.UuidValidator = exports.uuidSchema = exports.uuidV4 = void 0;
-const errors_1 = require("../../errors");
+exports.InputValidator = exports.myValidator = exports.uuidSchema = exports.uuidV4 = void 0;
 const yup = __importStar(require("yup"));
 exports.uuidV4 = yup
     .string()
     .required("UUID is required.")
     .uuid("Invalid UUID Syntax.");
 exports.uuidSchema = { id: exports.uuidV4 };
-const UuidValidator = (input) => __awaiter(void 0, void 0, void 0, function* () {
-    const uuidValidator = { id: exports.uuidV4 };
-    return Object.assign(new errors_1.InvalidUuidSyntaxError(), yield exports.myValidator(uuidValidator, input));
-});
-exports.UuidValidator = UuidValidator;
 const myValidator = (schema, input) => __awaiter(void 0, void 0, void 0, function* () {
     return yup
         .object()

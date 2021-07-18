@@ -42,7 +42,7 @@ exports.isGuest = isGuest;
 function CurrentUser() {
     return type_graphql_1.createMethodDecorator(({ context }, next) => __awaiter(this, void 0, void 0, function* () {
         if (!context.req.user)
-            throw new apollo_server_express_1.ForbiddenError("Access denied! You need to be authorized to perform this action!");
+            throw new apollo_server_express_1.AuthenticationError("Access denied! You need to be logged in to perform this action!");
         return next();
     }));
 }

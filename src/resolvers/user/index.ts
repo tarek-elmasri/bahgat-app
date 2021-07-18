@@ -5,6 +5,7 @@ export * from "./resetPassword";
 export * from "./me";
 export * from "./updateMe";
 export * from "./updatePhoneNo";
+export * from "./forgetPassword";
 import {
   UserBaseServices,
   RegisterationServices,
@@ -13,6 +14,7 @@ import {
   Me,
   UpdateMe,
   CreateUpdatePhoneNo,
+  ForgetPassword,
 } from "./";
 
 export const userServices = [
@@ -23,4 +25,5 @@ export const userServices = [
   RegisterationServices,
   UserAuthentication,
   ResetPassword,
+  ForgetPassword,
 ];
