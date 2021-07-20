@@ -6,7 +6,6 @@ var Role;
 (function (Role) {
     Role["ADMIN"] = "Admin";
     Role["STAFF"] = "STAFF";
-    Role["GUEST"] = "GUEST";
     Role["USER"] = "USER";
 })(Role = exports.Role || (exports.Role = {}));
 type_graphql_1.registerEnumType(Role, {

@@ -1,25 +1,26 @@
 import { ApolloServer } from "apollo-server-express";
-import { CartResolver, CategoryResolver, ItemResolver } from "../resolvers";
 import { buildSchema } from "type-graphql";
 
 import { itemLoader } from "../loaders/ItemLoader";
 import { cartLoader } from "../loaders/cartLoader";
-import { panel_userResolver } from "../resolvers/admin_panel/panel_userResolver";
-import { userServices } from "../resolvers/user";
+//import { panel_userResolver } from "../services/admin_panel/panel_userResolver";
+import { userServices } from "../services/user";
+import { CartServices, shopServices } from "../services/shop";
+import { adminServices } from "../services/admin_panel";
+import { MyContext } from "../types";
 
 export const apolloServerConfig = async (): Promise<ApolloServer> => {
   return new ApolloServer({
     schema: await buildSchema({
       resolvers: [
-        ItemResolver,
-        CategoryResolver,
+        CartServices,
         ...userServices,
-        CartResolver,
-        panel_userResolver,
+        ...shopServices,
+        ...adminServices,
       ],
       validate: false,
     }),
-    context: ({ req, res }) => ({
+    context: ({ req, res }): MyContext => ({
       req,
       res,
       itemsLoader: itemLoader(),

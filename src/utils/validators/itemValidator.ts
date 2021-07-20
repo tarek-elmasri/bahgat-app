@@ -1,6 +1,5 @@
-import { newItemInput, updateItemInput } from "../../types";
 import * as yup from "yup";
-import { myValidator, uuidV4 } from "./myValidator";
+import { uuidV4 } from "./myValidator";
 //import { NewItemError, UpdateItemErrors } from "../../types/Item.types";
 
 const name = yup.string().min(4, "Must be at least of 4 chars");
@@ -20,19 +19,19 @@ export const createItemSchema = {
   price: price.required(),
   stock: stock.required(),
 };
-export const createItemValidator = (input: newItemInput) => {
-  const schemaValidator = {
-    categoryId: uuidV4,
-    name: name.required(),
-    price: price.required(),
-    stock: stock.required(),
-  };
-  return myValidator(
-    schemaValidator,
-    { categoryId: input.categoryId, ...input.fields }
-    //NewItemError
-  );
-};
+// export const createItemValidator = (input: newItemInput) => {
+//   const schemaValidator = {
+//     categoryId: uuidV4,
+//     name: name.required(),
+//     price: price.required(),
+//     stock: stock.required(),
+//   };
+//   return myValidator(
+//     schemaValidator,
+//     { categoryId: input.categoryId, ...input.fields }
+//     //NewItemError
+//   );
+// };
 
 export const updateItemSchema = {
   id: uuidV4,
@@ -41,17 +40,17 @@ export const updateItemSchema = {
   price: price.notRequired(),
   stock: stock.notRequired(),
 };
-export const updateItemValidator = (input: updateItemInput) => {
-  const schemaValidator = {
-    uuid: uuidV4,
-    categoryId,
-    name: name.notRequired(),
-    price: price.notRequired(),
-    stock: stock.notRequired(),
-  };
-  return myValidator(
-    schemaValidator,
-    { id: input.id, ...input.fields }
-    //UpdateItemErrors
-  );
-};
+// export const updateItemValidator = (input: updateItemInput) => {
+//   const schemaValidator = {
+//     uuid: uuidV4,
+//     categoryId,
+//     name: name.notRequired(),
+//     price: price.notRequired(),
+//     stock: stock.notRequired(),
+//   };
+//   return myValidator(
+//     schemaValidator,
+//     { id: input.id, ...input.fields }
+//     //UpdateItemErrors
+//   );
+// };

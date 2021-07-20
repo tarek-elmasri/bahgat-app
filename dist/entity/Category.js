@@ -23,6 +23,7 @@ const validators_1 = require("../utils/validators");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const _1 = require("./");
+const errors_1 = require("../errors");
 let Category = class Category extends typeorm_1.BaseEntity {
     constructor() {
         super(...arguments);
@@ -30,7 +31,7 @@ let Category = class Category extends typeorm_1.BaseEntity {
         this.inputErrors = undefined;
         this.getErrors = (errorClass) => {
             if (this.inputErrors)
-                return Object.assign(new errorClass(), this.errors);
+                return Object.assign(errorClass ? new errorClass() : new errors_1.OnError(), this.errors);
             return undefined;
         };
     }

@@ -1,117 +1,117 @@
-import { Field, InputType, Int } from "type-graphql";
+// import { Field, InputType, Int } from "type-graphql";
 
-@InputType()
-class newItemFields {
-  @Field()
-  name: string;
+// @InputType()
+// class newItemFields {
+//   @Field()
+//   name: string;
 
-  @Field(() => String, { nullable: true })
-  img: string;
+//   @Field(() => String, { nullable: true })
+//   img: string;
 
-  @Field()
-  price: number;
+//   @Field()
+//   price: number;
 
-  @Field(() => Int)
-  stock: number;
+//   @Field(() => Int)
+//   stock: number;
 
-  @Field({ defaultValue: false })
-  infiniteStock: boolean;
+//   @Field({ defaultValue: false })
+//   infiniteStock: boolean;
 
-  @Field({ defaultValue: false })
-  notifyLowStock: boolean;
+//   @Field({ defaultValue: false })
+//   notifyLowStock: boolean;
 
-  @Field(() => Int, { nullable: true })
-  notifyStockOfQuantity: number;
+//   @Field(() => Int, { nullable: true })
+//   notifyStockOfQuantity: number;
 
-  @Field(() => String, { nullable: true })
-  patchNo: string;
+//   @Field(() => String, { nullable: true })
+//   patchNo: string;
 
-  @Field(() => String, { nullable: true })
-  weight: string;
+//   @Field(() => String, { nullable: true })
+//   weight: string;
 
-  @Field(() => Int, { nullable: true })
-  costValue: number;
+//   @Field(() => Int, { nullable: true })
+//   costValue: number;
 
-  @Field(() => Int, { nullable: true })
-  discountPrice: number;
+//   @Field(() => Int, { nullable: true })
+//   discountPrice: number;
 
-  @Field({ defaultValue: false })
-  haveDiscount: boolean;
+//   @Field({ defaultValue: false })
+//   haveDiscount: boolean;
 
-  @Field({ defaultValue: false })
-  quantityLimitOnDiscount: boolean;
+//   @Field({ defaultValue: false })
+//   quantityLimitOnDiscount: boolean;
 
-  @Field(() => Int, { nullable: true })
-  maxQuantityOnDiscount: number;
+//   @Field(() => Int, { nullable: true })
+//   maxQuantityOnDiscount: number;
 
-  @Field(() => Date, { nullable: true })
-  discountEndDate: Date;
-}
+//   @Field(() => Date, { nullable: true })
+//   discountEndDate: Date;
+// }
 
-@InputType()
-export class newItemInput {
-  @Field()
-  categoryId: string;
+// @InputType()
+// export class newItemInput {
+//   @Field()
+//   categoryId: string;
 
-  @Field(() => newItemFields)
-  fields: newItemFields;
-}
+//   @Field(() => newItemFields)
+//   fields: newItemFields;
+// }
 
-@InputType()
-class updateItemFields {
-  @Field(() => String, { nullable: true })
-  name?: string;
+// @InputType()
+// class updateItemFields {
+//   @Field(() => String, { nullable: true })
+//   name?: string;
 
-  @Field(() => String, { nullable: true })
-  categoryId?: string;
+//   @Field(() => String, { nullable: true })
+//   categoryId?: string;
 
-  @Field(() => String, { nullable: true })
-  img?: string;
+//   @Field(() => String, { nullable: true })
+//   img?: string;
 
-  @Field(() => Int, { nullable: true })
-  price?: number;
+//   @Field(() => Int, { nullable: true })
+//   price?: number;
 
-  @Field(() => Int, { nullable: true })
-  stock?: number;
+//   @Field(() => Int, { nullable: true })
+//   stock?: number;
 
-  @Field({ defaultValue: false })
-  infiniteStock?: boolean;
+//   @Field({ defaultValue: false })
+//   infiniteStock?: boolean;
 
-  @Field({ defaultValue: false })
-  notifyLowStock?: boolean;
+//   @Field({ defaultValue: false })
+//   notifyLowStock?: boolean;
 
-  @Field(() => Int, { nullable: true })
-  notifyStockOfQuantity?: number;
+//   @Field(() => Int, { nullable: true })
+//   notifyStockOfQuantity?: number;
 
-  @Field(() => String, { nullable: true })
-  patchNo?: string;
+//   @Field(() => String, { nullable: true })
+//   patchNo?: string;
 
-  @Field(() => String, { nullable: true })
-  weight?: string;
+//   @Field(() => String, { nullable: true })
+//   weight?: string;
 
-  @Field(() => Int, { nullable: true })
-  costValue?: number;
+//   @Field(() => Int, { nullable: true })
+//   costValue?: number;
 
-  @Field(() => Int, { nullable: true })
-  discountPrice?: number;
+//   @Field(() => Int, { nullable: true })
+//   discountPrice?: number;
 
-  @Field({ defaultValue: false })
-  haveDiscount?: boolean;
+//   @Field({ defaultValue: false })
+//   haveDiscount?: boolean;
 
-  @Field({ defaultValue: false })
-  quantityLimitOnDiscount?: boolean;
+//   @Field({ defaultValue: false })
+//   quantityLimitOnDiscount?: boolean;
 
-  @Field(() => Int, { nullable: true })
-  maxQuantityOnDiscount?: number;
+//   @Field(() => Int, { nullable: true })
+//   maxQuantityOnDiscount?: number;
 
-  @Field(() => Date, { nullable: true })
-  discountEndDate?: Date;
-}
-@InputType()
-export class updateItemInput {
-  @Field(() => String)
-  id: string;
+//   @Field(() => Date, { nullable: true })
+//   discountEndDate?: Date;
+// }
+// @InputType()
+// export class updateItemInput {
+//   @Field(() => String)
+//   id: string;
 
-  @Field(() => updateItemFields)
-  fields: updateItemFields;
-}
+//   @Field(() => updateItemFields)
+//   fields: updateItemFields;
+// }

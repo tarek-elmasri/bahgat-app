@@ -4,7 +4,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { createConnection } from "typeorm";
 import { apolloServerConfig, dbConnection } from "./config";
-import { sessionBuilder } from "./middlewares";
+import { MYSession } from "./middlewares";
 
 const app = express();
 
@@ -14,7 +14,7 @@ const app = express();
   app.use(cookieParser());
 
   //middleware to build session parameters
-  app.use(sessionBuilder);
+  app.use(MYSession.builder);
 
   const graphqlServer = await apolloServerConfig();
 

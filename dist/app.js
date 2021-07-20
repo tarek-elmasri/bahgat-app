@@ -23,7 +23,7 @@ const app = express_1.default();
 (() => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection(config_1.dbConnection);
     app.use(cookie_parser_1.default());
-    app.use(middlewares_1.sessionBuilder);
+    app.use(middlewares_1.MYSession.builder);
     const graphqlServer = yield config_1.apolloServerConfig();
     graphqlServer.applyMiddleware({ app });
     const PORT = process.env.PORT || "5000";

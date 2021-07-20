@@ -10,7 +10,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Item } from "./";
-import { ValidatorSchema } from "src/types";
+import { ValidatorSchema } from "../types";
+import { OnError } from "../errors";
 
 @Entity("categories")
 @ObjectType()
@@ -54,8 +55,13 @@ export class Category extends BaseEntity implements InputValidator {
     return this;
   }
 
-  getErrors = <T>(errorClass: { new (): T }): T | undefined => {
-    if (this.inputErrors) return Object.assign(new errorClass(), this.errors);
+  getErrors = <T>(errorClass?: { new (): T }): T | OnError | undefined => {
+    if (this.inputErrors)
+      return Object.assign(
+        errorClass ? new errorClass() : new OnError(),
+        this.errors
+      );
+
     return undefined;
   };
 }

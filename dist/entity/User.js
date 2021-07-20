@@ -23,16 +23,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var User_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
-const types_1 = require("../types");
 const type_graphql_1 = require("type-graphql");
-const typeorm_1 = require("typeorm");
-const _1 = require("./");
-const middlewares_1 = require("../middlewares");
-const validators_1 = require("../utils/validators");
-const bcryptjs_1 = require("bcryptjs");
-const PhoneValidation_1 = require("./PhoneValidation");
 const apollo_server_express_1 = require("apollo-server-express");
+const bcryptjs_1 = require("bcryptjs");
+const middlewares_1 = require("../middlewares");
+const _1 = require("./");
 const errors_1 = require("../errors");
+const types_1 = require("../types");
+const user_1 = require("../services/user");
+const validators_1 = require("../utils/validators");
+const typeorm_1 = require("typeorm");
 let User = User_1 = class User extends typeorm_1.BaseEntity {
     constructor() {
         super(...arguments);
@@ -41,6 +41,7 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         this.uniquenessErrors = false;
         this.uniquePhoneErrors = false;
         this.uniqueEmailErrors = false;
+        this.authorizationErrors = false;
         this.validateInput = (schema) => __awaiter(this, void 0, void 0, function* () {
             this.newPassword;
             this.inputErrors = yield validators_1.myValidator(schema, this);
@@ -51,18 +52,17 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
             if (this.uniquenessErrors ||
                 this.inputErrors ||
                 this.uniquePhoneErrors ||
-                this.uniqueEmailErrors)
+                this.uniqueEmailErrors ||
+                this.authorizationErrors)
                 return Object.assign(errorClass ? new errorClass() : new errors_1.OnError(), this.errors);
             return undefined;
         };
         this.auth = (options = { validateOTP: false }) => __awaiter(this, void 0, void 0, function* () {
             if (options.validateOTP) {
-                const phoneVerification = yield PhoneValidation_1.PhoneVerification.findOne({
-                    where: { phoneNo: this.phoneNo },
-                });
-                if (!phoneVerification ||
-                    !this.OTP ||
-                    !phoneVerification.isValidOTP(this.OTP))
+                if (!this.OTP)
+                    return undefined;
+                const errors = yield user_1.UserBaseServices.getOtpRequestErrors(this.phoneNo, this.OTP);
+                if (errors)
                     return undefined;
             }
             this.normalizeEmail();
@@ -77,18 +77,21 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
             return user;
         });
         this.sendOTP = () => __awaiter(this, void 0, void 0, function* () {
-            const phoneVerification = yield PhoneValidation_1.PhoneVerification.findOne({
-                where: { phoneNo: this.phoneNo },
-            });
-            if (!phoneVerification)
-                throw new apollo_server_express_1.ApolloError("Server can't perform  phone verification at this moment");
-            if (phoneVerification.isShortRequest())
-                return {
-                    code: "SHORT_TIME_REQUEST",
-                    message: "20 second interval is required between OTP requests",
-                };
-            yield phoneVerification.generateOTP().save();
-            return phoneVerification.sendOTP();
+            if (!this.phoneNo)
+                throw new apollo_server_express_1.ApolloError("No phoneNo. is provided", "phoneNo. is missing_MISSING");
+            return user_1.UserBaseServices.otpRequest(this.phoneNo);
+        });
+        this.getOtpRequestErrors = (phoneNo = this.phoneNo) => __awaiter(this, void 0, void 0, function* () {
+            if (!this.OTP)
+                throw new apollo_server_express_1.ApolloError("No OTP is provided", "OTP_MISSING");
+            if (!phoneNo)
+                throw new apollo_server_express_1.ApolloError("No phoneNo. is provided", "phoneNo. is missing_MISSING");
+            return user_1.UserBaseServices.getOtpRequestErrors(phoneNo, this.OTP);
+        });
+        this.resetPassword = (newPassword) => __awaiter(this, void 0, void 0, function* () {
+            this.password = newPassword;
+            this.setRefreshToken();
+            yield this.register();
         });
     }
     cart({ req }) {
@@ -102,7 +105,7 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         });
     }
     setRefreshToken() {
-        this.refresh_token = middlewares_1.createRefreshToken({ userId: this.id });
+        this.refresh_token = middlewares_1.MYSession.createRefreshToken({ userId: this.id });
     }
     normalizeEmail() {
         this.email = this.email.toLowerCase().normalize();
@@ -165,6 +168,19 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
             }
             return this;
         });
+    }
+    validateAuthorization() {
+        let authObject = {};
+        authObject = Object.assign(authObject, this.authorization);
+        const authKeys = Object.keys(authObject).filter((key) => authObject[key] !== false);
+        if (authKeys.length > 0 && this.role === types_1.Role.USER) {
+            this.authorizationErrors = true;
+            this.pushError({
+                key: "role",
+                message: "USER Role can't have authorizations.",
+            });
+        }
+        return this;
     }
     pushError({ key, message }) {
         if (key in this.errors) {

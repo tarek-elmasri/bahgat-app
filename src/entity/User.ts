@@ -1,5 +1,12 @@
-import { MyContext, OTP_Response, Role, ValidatorSchema } from "../types";
 import { Ctx, Field, ObjectType } from "type-graphql";
+import { ApolloError } from "apollo-server-express";
+import { compare, hash } from "bcryptjs";
+import { MYSession } from "../middlewares";
+import { Cart, Authorization } from "./";
+import { OnError } from "../errors";
+import { MyContext, Role, ValidatorSchema } from "../types";
+import { UserBaseServices } from "../services/user";
+import { InputValidator, myValidator } from "../utils/validators";
 import {
   BaseEntity,
   BeforeInsert,
@@ -12,38 +19,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Cart, Authorization } from "./";
-import { createRefreshToken } from "../middlewares";
 import {
-  InputValidator,
-  // createLoginSchema,
-  // createRegistrationSchema,
-  // loginSchema,
-  myValidator,
-  // registerSchema,
-  // updateMeSchema,
-} from "../utils/validators";
-import { compare, hash } from "bcryptjs";
-import { PhoneVerification } from "./PhoneValidation";
-import { ApolloError } from "apollo-server-express";
-import { OnError } from "../errors";
-
-// type CreateRegistrationSchema = typeof createRegistrationSchema;
-// type RegisterSchema = typeof registerSchema;
-// type LoginSchema = typeof loginSchema;
-// type CreateLoginSchema = typeof createLoginSchema;
-// type UpdateMeSchema = typeof updateMeSchema;
-// type ValidatorSchema =
-//   | CreateRegistrationSchema
-//   | RegisterSchema
-//   | LoginSchema
-//   | CreateLoginSchema
-//   | UpdateMeSchema;
-
-// interface OTP_Response {
-//   code: string;
-//   message: string;
-// }
+  OTP_Response,
+  OTP_Status,
+} from "../services/user/types/responses.types";
 
 @ObjectType()
 @Entity("users")
@@ -110,7 +89,7 @@ export class User extends BaseEntity implements InputValidator {
 
   @BeforeInsert()
   setRefreshToken() {
-    this.refresh_token = createRefreshToken({ userId: this.id });
+    this.refresh_token = MYSession.createRefreshToken({ userId: this.id });
   }
 
   @BeforeInsert()
@@ -127,7 +106,9 @@ export class User extends BaseEntity implements InputValidator {
   private uniquenessErrors: boolean = false;
   private uniquePhoneErrors: boolean = false;
   private uniqueEmailErrors: boolean = false;
+  private authorizationErrors: boolean = false;
   private newPassword: string;
+
   setOTP(OTP: number) {
     this.OTP = OTP;
     return this;
@@ -152,7 +133,8 @@ export class User extends BaseEntity implements InputValidator {
       this.uniquenessErrors ||
       this.inputErrors ||
       this.uniquePhoneErrors ||
-      this.uniqueEmailErrors
+      this.uniqueEmailErrors ||
+      this.authorizationErrors
     )
       return Object.assign(
         errorClass ? new errorClass() : new OnError(),
@@ -167,15 +149,12 @@ export class User extends BaseEntity implements InputValidator {
     options: { validateOTP: boolean } = { validateOTP: false }
   ): Promise<User | undefined> => {
     if (options.validateOTP) {
-      const phoneVerification = await PhoneVerification.findOne({
-        where: { phoneNo: this.phoneNo },
-      });
-      if (
-        !phoneVerification ||
-        !this.OTP ||
-        !phoneVerification.isValidOTP(this.OTP)
-      )
-        return undefined;
+      if (!this.OTP) return undefined;
+      const errors = await UserBaseServices.getOtpRequestErrors(
+        this.phoneNo,
+        this.OTP
+      );
+      if (errors) return undefined;
     }
     this.normalizeEmail();
     const user = await User.findOne({
@@ -190,26 +169,25 @@ export class User extends BaseEntity implements InputValidator {
     return user;
   };
 
-  sendOTP = async (): Promise<OTP_Response> => {
-    //finding user phone verification entity
-    const phoneVerification = await PhoneVerification.findOne({
-      where: { phoneNo: this.phoneNo },
-    });
-    if (!phoneVerification)
+  sendOTP = async (): Promise<OTP_Status> => {
+    if (!this.phoneNo)
       throw new ApolloError(
-        // user supposed to have phone no.
-        "Server can't perform  phone verification at this moment"
+        "No phoneNo. is provided",
+        "phoneNo. is missing_MISSING"
       );
+    return UserBaseServices.otpRequest(this.phoneNo);
+  };
 
-    if (phoneVerification.isShortRequest())
-      return {
-        code: "SHORT_TIME_REQUEST",
-        message: "20 second interval is required between OTP requests",
-      };
-
-    await phoneVerification.generateOTP().save();
-
-    return phoneVerification.sendOTP();
+  getOtpRequestErrors = async (
+    phoneNo: number = this.phoneNo
+  ): Promise<OTP_Response | undefined> => {
+    if (!this.OTP) throw new ApolloError("No OTP is provided", "OTP_MISSING");
+    if (!phoneNo)
+      throw new ApolloError(
+        "No phoneNo. is provided",
+        "phoneNo. is missing_MISSING"
+      );
+    return UserBaseServices.getOtpRequestErrors(phoneNo, this.OTP);
   };
 
   // hashes password and save
@@ -259,6 +237,22 @@ export class User extends BaseEntity implements InputValidator {
     return this;
   }
 
+  validateAuthorization() {
+    let authObject: { [key: string]: boolean } = {};
+    authObject = Object.assign(authObject, this.authorization);
+    const authKeys = Object.keys(authObject).filter(
+      (key: string) => authObject[key] !== false
+    );
+    if (authKeys.length > 0 && this.role === Role.USER) {
+      this.authorizationErrors = true;
+      this.pushError({
+        key: "role",
+        message: "USER Role can't have authorizations.",
+      });
+    }
+    return this;
+  }
+
   private pushError({ key, message }: { key: string; message: string }) {
     if (key in this.errors) {
       this.errors[key].push(message);
@@ -266,4 +260,12 @@ export class User extends BaseEntity implements InputValidator {
       this.errors[key] = [message];
     }
   }
+
+  resetPassword = async (newPassword: string) => {
+    this.password = newPassword;
+
+    this.setRefreshToken();
+    // hash passwords and saves
+    await this.register();
+  };
 }
