@@ -71,6 +71,7 @@ export class ResetPassword extends UserBaseServices {
     const errors = userAttempt.getErrors(ResetPasswordErrors);
     if (errors) return { errors };
 
+    console.log(await userAttempt.isPasswordMatch(user!.password));
     if (!(await userAttempt.isPasswordMatch(user!.password)))
       return {
         errors: new ResetPasswordErrors(

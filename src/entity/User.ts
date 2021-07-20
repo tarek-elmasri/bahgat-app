@@ -202,7 +202,7 @@ export class User extends BaseEntity implements InputValidator {
   }
 
   async isPasswordMatch(userPassword: string) {
-    return compare(this.password, userPassword);
+    return await compare(this.password, userPassword);
   }
 
   async validateUniquePhoneNo(exception?: { user: User }) {

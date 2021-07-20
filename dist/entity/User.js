@@ -134,7 +134,7 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
     }
     isPasswordMatch(userPassword) {
         return __awaiter(this, void 0, void 0, function* () {
-            return bcryptjs_1.compare(this.password, userPassword);
+            return yield bcryptjs_1.compare(this.password, userPassword);
         });
     }
     validateUniquePhoneNo(exception) {

@@ -172,7 +172,7 @@ export class CreateResetPasswordErrors implements OnError {
   message: string;
 
   @Field(() => [String], { nullable: true })
-  oldPassword?: string[];
+  password?: string[];
 
   @Field(() => [String], { nullable: true })
   newPassword?: string[];
@@ -180,12 +180,12 @@ export class CreateResetPasswordErrors implements OnError {
   constructor(
     code: string = "INVALID_INPUT_PARAMETERS",
     message: string = "Invalid input parameters",
-    oldPassword?: string[],
+    password?: string[],
     newPassword?: string[]
   ) {
     this.code = code;
     this.message = message;
-    this.oldPassword = oldPassword;
+    this.password = password;
     this.newPassword = newPassword;
   }
 }
@@ -197,11 +197,11 @@ export class ResetPasswordErrors extends CreateResetPasswordErrors {
   constructor(
     code?: string,
     message?: string,
-    oldPassword?: string[],
+    password?: string[],
     newPassword?: string[],
     OTP?: string[]
   ) {
-    super(code, message, oldPassword, newPassword);
+    super(code, message, password, newPassword);
     this.OTP = OTP;
   }
 }
