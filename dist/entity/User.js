@@ -33,6 +33,7 @@ const types_1 = require("../types");
 const user_1 = require("../services/user");
 const validators_1 = require("../utils/validators");
 const typeorm_1 = require("typeorm");
+const Order_1 = require("./orders/Order");
 let User = User_1 = class User extends typeorm_1.BaseEntity {
     constructor() {
         super(...arguments);
@@ -259,6 +260,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], User.prototype, "cart", null);
+__decorate([
+    type_graphql_1.Field(() => [Order_1.Order], { nullable: true }),
+    typeorm_1.OneToMany(() => Order_1.Order, (order) => order.user, {
+        eager: true,
+        cascade: true,
+        onDelete: "CASCADE",
+    }),
+    __metadata("design:type", Array)
+], User.prototype, "orders", void 0);
 __decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),

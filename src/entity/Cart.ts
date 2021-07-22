@@ -23,7 +23,7 @@ export class Cart extends BaseEntity {
 
   @Field(() => [CartsItems])
   @OneToMany(() => CartsItems, (cartItem) => cartItem.cart, { eager: true })
-  cartItems: Promise<CartsItems[]>;
+  cartItems: CartsItems[];
 
   //TODO after implementation
   //useless here as quantities are not available --> to be moved into cart items entity

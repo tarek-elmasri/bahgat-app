@@ -8,6 +8,7 @@ import { userServices } from "../services/user";
 import { CartServices, shopServices } from "../services/shop";
 import { adminServices } from "../services/admin_panel";
 import { MyContext } from "../types";
+import { orderServices } from "..//services/order";
 
 export const apolloServerConfig = async (): Promise<ApolloServer> => {
   return new ApolloServer({
@@ -17,6 +18,7 @@ export const apolloServerConfig = async (): Promise<ApolloServer> => {
         ...userServices,
         ...shopServices,
         ...adminServices,
+        ...orderServices,
       ],
       validate: false,
     }),

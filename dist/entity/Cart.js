@@ -26,7 +26,7 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => [_1.CartsItems]),
     typeorm_1.OneToMany(() => _1.CartsItems, (cartItem) => cartItem.cart, { eager: true }),
-    __metadata("design:type", Promise)
+    __metadata("design:type", Array)
 ], Cart.prototype, "cartItems", void 0);
 Cart = __decorate([
     typeorm_1.Entity("carts"),

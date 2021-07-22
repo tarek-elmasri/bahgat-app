@@ -1,3 +1,4 @@
+import { createOrderSchema } from "src/utils/validators/orderValidator";
 import {
   addItemToCartSchema,
   createForgetPasswordSchema,
@@ -35,4 +36,5 @@ export type ValidatorSchema =
   | typeof updatePhoneNoSchema
   | typeof createForgetPasswordSchema
   | typeof forgetPasswordSchema
-  | typeof addItemToCartSchema;
+  | typeof addItemToCartSchema
+  | typeof createOrderSchema;

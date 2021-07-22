@@ -25,6 +25,7 @@ export class RegisterationServices extends UserBaseServices {
     @Arg("input") input: CreateRegistrationInput
   ): Promise<CreateRegisterationResponse> {
     // input validations
+
     const userAttempt = await (
       await User.create(input)
         .normalizeEmail()

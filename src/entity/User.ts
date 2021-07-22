@@ -15,6 +15,7 @@ import {
   Entity,
   Index,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,6 +24,7 @@ import {
   OTP_Response,
   OTP_Status,
 } from "../services/user/types/responses.types";
+import { Order } from "./orders/Order";
 
 @ObjectType()
 @Entity("users")
@@ -87,6 +89,14 @@ export class User extends BaseEntity implements InputValidator {
     });
   }
 
+  @Field(() => [Order], { nullable: true })
+  @OneToMany(() => Order, (order) => order.user, {
+    eager: true,
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  orders: Order[];
+
   @BeforeInsert()
   setRefreshToken() {
     this.refresh_token = MYSession.createRefreshToken({ userId: this.id });
@@ -124,7 +134,6 @@ export class User extends BaseEntity implements InputValidator {
   async validateUniqueness(exception?: { user: User }) {
     await this.validateUniqueEmail(exception);
     await this.validateUniquePhoneNo(exception);
-
     return this;
   }
 
@@ -226,6 +235,7 @@ export class User extends BaseEntity implements InputValidator {
   async validateUniqueEmail(exception?: { user: User }) {
     if (!exception || (exception && exception.user.email !== this.email)) {
       const user = await User.findOne({ where: { email: this.email } });
+
       if (user) {
         this.uniqueEmailErrors = true;
         this.pushError({

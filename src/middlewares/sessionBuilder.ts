@@ -55,6 +55,7 @@ Builder schema:
       session = await createSession(req, res);
       return next();
     }
+
     //find session by cookie.id
     session = await Session.findOne({ where: { id: cookie.id } });
 
@@ -100,6 +101,7 @@ Builder schema:
         await updateSession(session, user, req, res);
       }
     }
+
     return next();
   };
 

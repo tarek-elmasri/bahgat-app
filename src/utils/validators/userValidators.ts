@@ -64,7 +64,16 @@ export const updatePhoneNoSchema = { phoneNo, OTP };
 export const createForgetPasswordSchema = { newPassword: password, phoneNo };
 export const forgetPasswordSchema = { newPassword: password, phoneNo, OTP };
 
+export const userFieldsValidators = {
+  username,
+  password,
+  email,
+  phoneNo,
+  OTP,
+};
+
 export default {
+  userFieldsValidators,
   createResetPasswordSchema,
   resetPasswordSchema,
   createLoginSchema,
